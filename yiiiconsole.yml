@@ -1,0 +1,6 @@
+commands:
+    ignore:
+        - interactive
+        - serve
+    output:
+        height: 6
