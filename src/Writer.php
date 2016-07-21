@@ -1,14 +1,19 @@
 <?php
 
-namespace yiiiconsole;
+namespace Yiiic;
 
 use yii\helpers\Console;
 
-class Writer
+class Writer implements WriterInterface
 {
 
     protected $stream;
 
+    /**
+     * Writer constructor.
+     *
+     * @param resource|NULL $stream
+     */
     public function __construct(resource $stream = NULL)
     {
         if ($stream === NULL) {
@@ -18,11 +23,19 @@ class Writer
         $this->stream = $stream;
     }
 
+    /**
+     * @param string $input
+     * @param array  $format
+     */
     public function write(string $input, array $format = [])
     {
         $this->w($input, $format);
     }
 
+    /**
+     * @param string $input
+     * @param array  $format
+     */
     public function writeln(string $input = '', array $format = [])
     {
         $this->w($input . PHP_EOL, $format);

@@ -1,6 +1,6 @@
 <?php
 
-namespace yiiiconsole\exceptions;
+namespace Yiiic\Exceptions;
 
 use yii\console\Exception;
 

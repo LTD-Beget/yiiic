@@ -1,19 +1,19 @@
 <?php
 
-namespace yiiiconsole;
+namespace Yiiic;
 
 class Route
 {
-    
-    /**
-     * @var string
-     */
-    protected $controllerID;
 
     /**
      * @var string
      */
-    protected $actionID;
+    protected $controllerID = '';
+
+    /**
+     * @var string
+     */
+    protected $actionID = '';
 
     /**
      * Route constructor.
@@ -44,7 +44,7 @@ class Route
     }
 
     /**
-     * @return mixed
+     * @return string
      */
     public function getControllerID() : string
     {
@@ -52,7 +52,7 @@ class Route
     }
 
     /**
-     * @return mixed
+     * @return string
      */
     public function getActionID() : string
     {
@@ -61,11 +61,12 @@ class Route
 
     public function getAsString(string $separator = '/') : string
     {
-        return $this->getControllerID() . $separator . $this->getActionID();
+        return implode($separator, $this->getAsArray());
     }
 
     public function getAsArray() : array
     {
-        return [$this->getControllerID(), $this->getActionID()];
+        return array_filter([$this->getControllerID(), $this->getActionID()]);
     }
+
 }

@@ -1,25 +1,35 @@
 {
-    "name": "beget/yiiiconsole",
-    "description": "yii2 interactive console with autocomplete commands and options",
+    "name": "ltd-beget/yiiic",
+    "description": "yii2 interactive console with smart autocomplete and context workflow",
     "type": "library",
+    "license": "MIT",
+    "keywords": ["yii2", "console", "interactive", "shell"],
     "authors": [
         {
-            "name": "Danila Ridzhi",
+            "name": "Danila Stivrinsh",
             "email": "danilaridzhi@gmail.com"
         }
     ],
     "require": {
         "php": "7.0.*",
         "yiisoft/yii2": "~2.0",
-        "symfony/yaml": "^3.1"
+        "ridzhi/smarrt": "^1.0"
     },
     "require-dev": {
         "phpunit/phpunit": "5.4.*"
     },
     "autoload": {
         "psr-4": {
-            "yiiiconsole\\": ["src/"],
-            "Tests\\": ["tests/"]
+            "Yiiic\\": [
+                "src/"
+            ]
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\Yiiic\\": [
+                "tests/"
+            ]
         }
     },
     "min-stability": "dev"

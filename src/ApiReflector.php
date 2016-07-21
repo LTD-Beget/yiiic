@@ -1,19 +1,19 @@
 <?php
 
-namespace yiiiconsole;
+namespace Yiiic;
 
 use yii\console\Controller;
 use yii\console\controllers\HelpController;
+use Yiiic\Exceptions\ApiReflectorNotFoundException;
+use Yiiic\Exceptions\InvalidCommandException;
 
 /**
  * Class ApiReflector
  *
  * @package yiiiconsole
  */
-class ApiReflector
+class ApiReflector implements ReflectionInterface
 {
-
-    const OPTIONS_PREFIX = '--';
 
     /**
      * @var \ReflectionClass
@@ -46,25 +46,30 @@ class ApiReflector
     }
 
     /**
-     * @param string $command
+     * @param string $controllerID
      *
      * @return array
+     * @throws InvalidCommandException
      */
-    public function actions(string $command) : array
+    public function actions(string $controllerID) : array
     {
-        return array_keys($this->api[$command]);
+        $this->validateControllerID($controllerID);
+
+        return array_keys($this->api[$controllerID]);
     }
 
     /**
-     * @param string $command
-     * @param string $action
+     * @param string $controllerID
+     * @param string $actionID
      * @param string $prefix
      *
      * @return array
      */
-    public function options(string $command, string $action = 'index', $prefix = self::OPTIONS_PREFIX) : array
+    public function options(string $controllerID, string $actionID = 'index', $prefix = ReflectionInterface::OPTION_PREFIX) : array
     {
-        $options = $this->api[$command][$action];
+        $this->validateActionID($controllerID, $actionID);
+
+        $options = $this->api[$controllerID][$actionID];
 
         if ($prefix !== NULL) {
             $options = array_map(function ($elem) use ($prefix) {
@@ -111,6 +116,33 @@ class ApiReflector
         $method = $this->class->getMethod('getActions');
 
         return $method->invoke($this->obj, $controller);
+    }
+
+    /**
+     * @param string $controllerID
+     *
+     * @throws ApiReflectorNotFoundException
+     */
+    protected function validateControllerID(string $controllerID)
+    {
+        if (!array_key_exists($controllerID, $this->api)) {
+            throw new ApiReflectorNotFoundException(sprintf('Controller <%s> not found', $controllerID));
+        }
+    }
+
+    /**
+     * @param string $controllerID
+     * @param string $actionID
+     *
+     * @throws ApiReflectorNotFoundException
+     */
+    protected function validateActionID(string $controllerID, string $actionID)
+    {
+        $this->validateControllerID($controllerID);
+
+        if (!array_key_exists($actionID, $this->api[$controllerID])) {
+            throw new ApiReflectorNotFoundException(sprintf('Action <%s/%s> not found', $controllerID, $actionID));
+        }
     }
 
 }

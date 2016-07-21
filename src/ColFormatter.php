@@ -1,47 +1,52 @@
 <?php
 
-namespace yiiiconsole;
+namespace Yiiic;
 
-use yii\helpers\Console;
-
-class ColFormatter
+class ColFormatter implements ColFormatterInterface
 {
 
     protected $padding = 2;
 
-    public function format(array $data, int $heightCol)
+    /**
+     * @param array $data
+     * @param int   $heightCol
+     * @param int   $widthRow
+     *
+     * @return string
+     */
+    public function format(array $data, int $heightCol, int $widthRow) : string
     {
         $widthCol = $this->getWidthCol($data);
-        $count = $this->getPossibleColNumber($data, $heightCol, $widthCol);
-        $chunked = $this->chunkData($data, $count);
+        list($count, $isCanBePlaced) = $this->getColCountInfo($data, $heightCol, $widthCol, $widthRow);
+        $size = ($isCanBePlaced) ? $heightCol : ceil(count($data) / $count);
 
-        return $this->getOutput($chunked, $widthCol);
+        return $this->getOutput(array_chunk($data, $size), $widthCol);
     }
 
     /**
      * @param array $data
      * @param int   $heightCol
      * @param int   $widthCol
+     * @param int   $widthScreen
      *
-     * @return int
+     * @return array [int number, bool canBeReplaced]
      */
-    protected function getPossibleColNumber(array $data, int $heightCol, int $widthCol) : int
+    protected function getColCountInfo(array $data, int $heightCol, int $widthCol, int $widthScreen) : array
     {
         // try to perform with client settings
-        $widthScreen = $this->getWidthScreen();
-        $number          = (int) ceil(count($data) / $heightCol);
+        $number         = (int) ceil(count($data) / $heightCol);
         $availableWidth = (int) (ceil(($widthScreen - $this->padding) / $number) - $this->padding);
 
         $isCanBePlaced = $availableWidth >= $widthCol;
 
         // otherwise using auto calculation
-        if(!$isCanBePlaced) {
-            $number   = (int) ceil(($widthScreen - $this->padding) / $widthCol);
+        if (!$isCanBePlaced) {
+            $number = (int) ceil(($widthScreen - $this->padding) / $widthCol);
         }
 
-        return $number;
+        return [$number, $isCanBePlaced];
     }
-    
+
     /**
      * @param array $data
      * @param int   $chunks
@@ -81,38 +86,44 @@ class ColFormatter
      */
     protected function getOutput(array $data, int $offset) : string
     {
-        ob_start();
+        $offset = $this->padding + $offset;
 
-        Console::moveCursorDown();
-        Console::saveCursorPosition();
+        $output = PHP_EOL;
+        $i      = 0;
 
-        $pos = $this->padding;
+        while (true) {
 
-        foreach ($data as $column) {
+            foreach ($data as $column) {
 
-            foreach ($column as $cmd) {
-                Console::moveCursorTo($pos);
-                echo $cmd . PHP_EOL;
+                if (!isset($column[$i])) {
+
+                    if (isset($data[0][$i + 1])) {
+                        $value = '';
+                    } else {
+                        break 2;
+                    }
+                } else {
+                    $value = $column[$i];
+                }
+
+                $output .= $value . $this->getSpace($offset - strlen($value));
             }
 
-            $pos += $offset;
-
-            Console::restoreCursorPosition();
+            $i++;
+            $output .= PHP_EOL;
         }
 
-        $rowsCount = count($data[0]);
-
-        Console::moveCursorDown($rowsCount + 1);
-
-        return ob_get_clean();
+        return $output . PHP_EOL;
     }
 
     /**
-     * @return int
+     * @param int $n
+     *
+     * @return string
      */
-    protected function getWidthScreen() : int
+    protected function getSpace(int $n) : string
     {
-        return Console::getScreenSize(true)[0];
+        return implode('', array_fill(0, $n, ' '));
     }
 
 }
