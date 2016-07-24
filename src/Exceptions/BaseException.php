@@ -4,7 +4,7 @@ namespace LTDBeget\Yiiic\Exceptions;
 
 use yii\console\Exception;
 
-class BaseException extends Exception
+abstract class BaseException extends Exception
 {
 
 }
