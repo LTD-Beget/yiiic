@@ -1,9 +1,9 @@
 <?php
 
-namespace Yiiic\Handlers\Yiiic;
+namespace LTDBeget\Yiiic\Handlers\Yiiic;
 
-use Yiiic\Exceptions\ContextHandlerException;
-use Yiiic\Route;
+use LTDBeget\Yiiic\Exceptions\ContextHandlerException;
+use LTDBeget\Yiiic\Route;
 
 class ContextHandler
 {

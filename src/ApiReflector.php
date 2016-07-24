@@ -1,11 +1,11 @@
 <?php
 
-namespace Yiiic;
+namespace LTDBeget\Yiiic;
 
 use yii\console\Controller;
 use yii\console\controllers\HelpController;
-use Yiiic\Exceptions\ApiReflectorNotFoundException;
-use Yiiic\Exceptions\InvalidCommandException;
+use LTDBeget\Yiiic\Exceptions\ApiReflectorNotFoundException;
+use LTDBeget\Yiiic\Exceptions\InvalidCommandException;
 
 /**
  * Class ApiReflector

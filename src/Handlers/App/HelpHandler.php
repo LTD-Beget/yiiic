@@ -1,9 +1,9 @@
 <?php
 
-namespace Yiiic\Handlers\App;
+namespace LTDBeget\Yiiic\Handlers\App;
 
 
-use Yiiic\Exceptions\InvalidCommandException;
+use LTDBeget\Yiiic\Exceptions\InvalidCommandException;
 
 class HelpHandler
 {

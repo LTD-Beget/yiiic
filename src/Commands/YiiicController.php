@@ -1,14 +1,14 @@
 <?php
 
-namespace Yiiic\Commands;
+namespace LTDBeget\Yiiic\Commands;
 
 use yii\console\Controller;
 
-use Yiiic\ApiReflector;
-use Yiiic\ColFormatter;
-use Yiiic\Route;
-use Yiiic\Writer;
-use Yiiic\Yiiic;
+use LTDBeget\Yiiic\ApiReflector;
+use LTDBeget\Yiiic\ColFormatter;
+use LTDBeget\Yiiic\Route;
+use LTDBeget\Yiiic\Writer;
+use LTDBeget\Yiiic\Yiiic;
 
 /**
  * Interactive console mode

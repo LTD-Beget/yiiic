@@ -1,6 +1,6 @@
 <?php
 
-namespace Yiiic;
+namespace LTDBeget\Yiiic;
 
 interface ReflectionInterface
 {

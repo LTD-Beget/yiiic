@@ -1,8 +1,8 @@
 <?php
 
-namespace Yiiic\Handlers\Yiiic;
+namespace LTDBeget\Yiiic\Handlers\Yiiic;
 
-use Yiiic\Route;
+use LTDBeget\Yiiic\Route;
 
 class BackHandler
 {

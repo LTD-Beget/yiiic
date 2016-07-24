@@ -1,18 +1,18 @@
 <?php
 
-namespace Yiiic;
+namespace LTDBeget\Yiiic;
 
 use Smarrt\Dot;
 use yii\base\Component;
 use yii\console\Request;
 use yii\helpers\ArrayHelper;
 use yii\helpers\Console;
-use Yiiic\Exceptions\ApiReflectorNotFoundException;
-use Yiiic\Exceptions\InvalidCommandException;
-use Yiiic\Handlers\App\CommonHandler;
-use Yiiic\Handlers\App\HelpHandler;
-use Yiiic\Handlers\Yiiic\BackHandler;
-use Yiiic\Handlers\Yiiic\ContextHandler;
+use LTDBeget\Yiiic\Exceptions\ApiReflectorNotFoundException;
+use LTDBeget\Yiiic\Exceptions\InvalidCommandException;
+use LTDBeget\Yiiic\Handlers\App\CommonHandler;
+use LTDBeget\Yiiic\Handlers\App\HelpHandler;
+use LTDBeget\Yiiic\Handlers\Yiiic\BackHandler;
+use LTDBeget\Yiiic\Handlers\Yiiic\ContextHandler;
 
 class Yiiic extends Component
 {

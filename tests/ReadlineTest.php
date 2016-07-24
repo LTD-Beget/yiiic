@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Yiiic;
+namespace LTDBeget\Yiiic\Tests;
 
 class ReadlineTest extends \PHPUnit_Framework_TestCase
 {

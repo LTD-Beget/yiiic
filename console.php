@@ -23,15 +23,15 @@ require 'vendor/autoload.php';
 
 require 'vendor/yiisoft/yii2/Yii.php';
 
-Yii::setAlias('Yiiic', __DIR__ . '/src/');
+Yii::setAlias('LTDBeget/Yiiic', __DIR__ . '/src/');
 
 $application = new yii\console\Application([
     'id' => 'yii-console',
     'basePath' => __DIR__ . '/src',
-    'controllerNamespace' => 'Yiiic\Commands',
+    'controllerNamespace' => 'LTDBeget\Yiiic\Commands',
     'components' => [
         'yiiic' => [
-            'class' => 'Yiiic\Yiiic',
+            'class' => 'LTDBeget\Yiiic\Yiiic',
             'params' => []
         ]
     ]

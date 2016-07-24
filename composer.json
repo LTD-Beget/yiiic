@@ -20,14 +20,14 @@
     },
     "autoload": {
         "psr-4": {
-            "Yiiic\\": [
+            "LTDBeget\\Yiiic\\": [
                 "src/"
             ]
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Tests\\Yiiic\\": [
+            "LTDBeget\\Yiiic\\Tests\\": [
                 "tests/"
             ]
         }
