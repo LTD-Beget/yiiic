@@ -7,8 +7,8 @@ interface ColFormatterInterface
 
     /**
      * @param array $data
-     * @param int   $heightCol
-     * @param int   $widthRow
+     * @param int $heightCol
+     * @param int $widthRow
      *
      * @return string
      */

@@ -25,7 +25,7 @@ class Writer implements WriterInterface
 
     /**
      * @param string $input
-     * @param array  $format
+     * @param array $format
      */
     public function write(string $input, array $format = [])
     {
@@ -34,7 +34,7 @@ class Writer implements WriterInterface
 
     /**
      * @param string $input
-     * @param array  $format
+     * @param array $format
      */
     public function writeln(string $input = '', array $format = [])
     {

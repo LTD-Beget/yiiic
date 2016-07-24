@@ -33,8 +33,8 @@ class ApiReflector implements ReflectionInterface
     public function __construct(array $ignore = [])
     {
         $this->class = new \ReflectionClass(HelpController::class);
-        $this->obj   = $this->class->newInstanceWithoutConstructor();
-        $this->api   = $this->buildApi($ignore);
+        $this->obj = $this->class->newInstanceWithoutConstructor();
+        $this->api = $this->buildApi($ignore);
     }
 
     /**
@@ -105,7 +105,7 @@ class ApiReflector implements ReflectionInterface
 
     protected function getCommands(array $ignore = []) : array
     {
-        $method   = $this->class->getMethod('getCommands');
+        $method = $this->class->getMethod('getCommands');
         $commands = $method->invoke($this->obj);
 
         return array_diff($commands, $ignore);

@@ -24,7 +24,7 @@ class Route
     public function __construct(string $controllerID = '', string $actionID = '')
     {
         $this->controllerID = $controllerID;
-        $this->actionID     = $actionID;
+        $this->actionID = $actionID;
     }
 
     /**

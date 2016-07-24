@@ -7,7 +7,7 @@ interface WriterInterface
 
     /**
      * @param string $input
-     * @param array  $format
+     * @param array $format
      *
      * @return void
      */
@@ -15,7 +15,7 @@ interface WriterInterface
 
     /**
      * @param string $input
-     * @param array  $format
+     * @param array $format
      *
      * @return void
      */
