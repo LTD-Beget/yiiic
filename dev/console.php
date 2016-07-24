@@ -17,17 +17,16 @@ ini_set('error_reporting', -1);
 
 defined('YII_DEBUG') or define('YII_DEBUG', true);
 
+$root = __DIR__ . '/..';
 
+require $root . '/vendor/autoload.php';
+require $root . '/vendor/yiisoft/yii2/Yii.php';
 
-require 'vendor/autoload.php';
-
-require 'vendor/yiisoft/yii2/Yii.php';
-
-Yii::setAlias('LTDBeget/Yiiic', __DIR__ . '/src/');
+Yii::setAlias('LTDBeget/Yiiic', $root . '/src/');
 
 $application = new yii\console\Application([
     'id' => 'yii-console',
-    'basePath' => __DIR__ . '/src',
+    'basePath' => $root . '/src',
     'controllerNamespace' => 'LTDBeget\Yiiic\Commands',
     'components' => [
         'yiiic' => [
