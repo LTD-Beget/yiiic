@@ -9,10 +9,10 @@ use yii\helpers\ArrayHelper;
 use yii\helpers\Console;
 use LTDBeget\Yiiic\Exceptions\ApiReflectorNotFoundException;
 use LTDBeget\Yiiic\Exceptions\InvalidCommandException;
-use LTDBeget\Yiiic\Handlers\App\CommonHandler;
-use LTDBeget\Yiiic\Handlers\App\HelpHandler;
-use LTDBeget\Yiiic\Handlers\Yiiic\BackHandler;
-use LTDBeget\Yiiic\Handlers\Yiiic\ContextHandler;
+use LTDBeget\Yiiic\Handlers\CommonHandler;
+use LTDBeget\Yiiic\Handlers\HelpHandler;
+use LTDBeget\Yiiic\Handlers\BackHandler;
+use LTDBeget\Yiiic\Handlers\ContextHandler;
 
 class Yiiic extends Component
 {
@@ -26,6 +26,11 @@ class Yiiic extends Component
      * @var Dot
      */
     protected $params;
+
+    /**
+     * @var string
+     */
+    protected $commandPrefix;
 
     /**
      * @var Writer
@@ -53,8 +58,8 @@ class Yiiic extends Component
     public function setParams(array $params = [])
     {
         $params = ArrayHelper::merge($this->getDefaultParams(), $params);
-
         $this->params = Dot::with($params);
+        $this->commandPrefix = $this->param('command_prefix');
     }
 
     /**
@@ -124,23 +129,26 @@ class Yiiic extends Component
         try {
             $args = $this->parseInput($input);
 
-            if ($this->hasHelpCommand($args)) {
-                return $this->handleHelpCommand($args);
+            $readContext = true;
+            $scmd = null;
+
+            if ($this->hasServiceCommand($args)) {
+                list($readContext, $scmd) = $this->parseServiceCommand(array_shift($args));
             }
 
-            $segments = ArrayHelper::merge($this->route->getAsArray(), $args);
+            if ($readContext) {
+                $args = ArrayHelper::merge($this->route->getAsArray(), $args);
+            }
 
-            if (empty($segments)) {
+            if ($scmd) {
+                return $this->handleServiceCommand($scmd, $args);
+            }
+
+            if (empty($args)) {
                 return $this->printNotice('Try to type some command please :)');
             }
 
-            $serviceCommand = $this->extractYiiicCommand($segments);
-
-            if ($serviceCommand !== false) {
-                return $this->handleYiiicCommand($serviceCommand, $segments);
-            }
-
-            $params = (new CommonHandler())->handle($segments);
+            $params = (new CommonHandler())->handle($args);
 
             return $this->handleAppCommand($params);
         } catch (\Throwable $e) {
@@ -160,24 +168,14 @@ class Yiiic extends Component
         $this->writer->writeln();
     }
 
-    protected function handleHelpCommand(array $args)
+    protected function handleServiceCommand(string $command, array $args)
     {
-        $params = array_slice(array_diff($args, [$this->param('commands.help')]), 0);
-        $params = (new HelpHandler())->handle($params);
-
-        return $this->handleAppCommand($params);
-    }
-
-    protected function handleYiiicCommand(string $command, array $args)
-    {
-        $args = array_diff($args, [$command]);
-
         switch ($command) {
-            case $this->param('commands.context_enter'):
+            case $this->param('commands.help'):
+                $params = (new HelpHandler())->handle($args);
+                return $this->handleAppCommand($params);
+            case $this->param('commands.context'):
                 (new ContextHandler())->handle($this->route, $args);
-                break;
-            case $this->param('commands.context_quit'):
-                (new BackHandler())->handle($this->route);
                 break;
             case $this->param('commands.quit'):
                 $this->receivedQuitCommand = true;
@@ -240,7 +238,10 @@ class Yiiic extends Component
         $this->writer->writeln();
     }
 
-    protected function getContextInfo()
+    /**
+     * @return array
+     */
+    protected function getContextInfo() : array
     {
         $segments = $this->route->getAsArray();
 
@@ -256,7 +257,10 @@ class Yiiic extends Component
         }
     }
 
-    protected function getPrompt()
+    /**
+     * @return string
+     */
+    protected function getPrompt() : string
     {
         $prompt = 'yiiic';
         $route = $this->route->getAsString();
@@ -269,27 +273,8 @@ class Yiiic extends Component
     }
 
     /**
-     * @param array $args
-     *
-     * @return string | false
-     * @throws InvalidCommandException
+     * @return array
      */
-    protected function extractYiiicCommand(array $args)
-    {
-        $list = array_slice(array_intersect($this->getServiceCommands(), $args), 0);
-        $count = count($list);
-
-        if (!$count) {
-            return false;
-        }
-
-        if ($count > 1) {
-            throw new InvalidCommandException(sprintf('You can pass one service command (received %s)', implode(', ', $list)));
-        }
-
-        return $list[0];
-    }
-
     protected function getServiceCommands() : array
     {
         return array_values($this->param('commands'));
@@ -308,27 +293,35 @@ class Yiiic extends Component
         return $this->completeHandler($input, readline_info());
     }
 
+    /**
+     * @param string $input
+     * @param array $info
+     * @return array
+     */
     protected function completeHandler(string $input, array $info)
     {
         try {
-            $buffer = $this->parseInput(substr($info['line_buffer'], 0, $info['end']));
+            $args = $this->parseInput($info['line_buffer']);
 
             if (!empty($input)) {
-                array_pop($buffer);
+                array_pop($args);
             }
 
-            $segments = $buffer;
+            $readContext = true;
 
-            if ($this->hasHelpCommand($segments)) {
-                $segments = array_slice(array_diff($segments, [$this->param('commands.help')]), 0);
-            } else {
-                $segments = ArrayHelper::merge($this->route->getAsArray(), $buffer);
-                // slice for reset key and true count elems
-                $segments = array_slice($segments, 0);
+            if ($this->hasServiceCommand($args)) {
+
+                if ($this->isNonContextCommand(array_shift($args))) {
+                    $readContext = false;
+                }
+            }
+
+            if ($readContext) {
+                $args = ArrayHelper::merge($this->route->getAsArray(), $args);
             }
 
             try {
-                $scope = $this->getCompleteScope($segments);
+                $scope = $this->getCompleteScope($args);
             } catch (ApiReflectorNotFoundException $e) {
                 return $this->preventSegfaultValue();
             }
@@ -342,6 +335,11 @@ class Yiiic extends Component
         }
     }
 
+    /**
+     * @param string $input
+     * @param array $scope
+     * @return array
+     */
     protected function getComplete(string $input, array $scope) : array
     {
         if (empty($input)) {
@@ -364,7 +362,11 @@ class Yiiic extends Component
         return $complete;
     }
 
-    protected function getCompleteScope(array $segments)
+    /**
+     * @param array $segments
+     * @return array
+     */
+    protected function getCompleteScope(array $segments) : array
     {
         $count = count($segments);
 
@@ -378,14 +380,53 @@ class Yiiic extends Component
         }
     }
 
-    protected function hasHelpCommand(array $args)
-    {
-        return array_search($this->param('commands.help'), $args) !== false;
-    }
-
+    /**
+     * @param string $input
+     * @return array
+     */
     protected function parseInput(string $input) : array
     {
         return preg_split('/\s+/', $input, -1, PREG_SPLIT_NO_EMPTY);
+    }
+
+    /**
+     * @param string $command
+     * @return array [isContext, Command]
+     */
+    protected function parseServiceCommand(string $command) : array
+    {
+        $nonContext = $this->commandPrefix . $this->commandPrefix;
+        if (strpos($command, $nonContext) === 0) {
+            return [false, substr($command, 2)];
+        }
+
+        return [true, substr($command, 1)];
+    }
+
+    /**
+     * @param string $command
+     * @return bool
+     */
+    protected function isNonContextCommand(string $command) : bool
+    {
+        return strpos($command, $this->getNonContextPrefix()) === 0;
+    }
+
+    /**
+     * @return string
+     */
+    protected function getNonContextPrefix() : string
+    {
+        return $this->commandPrefix . $this->commandPrefix;
+    }
+
+    /**
+     * @param array $args
+     * @return bool
+     */
+    protected function hasServiceCommand(array $args) : bool
+    {
+        return !empty($args) && (strpos($args[0], $this->param('command_prefix')) === 0);
     }
 
     /**
@@ -403,11 +444,11 @@ class Yiiic extends Component
         return [
             'ignore' => ['interactive', 'help'],
             'commands' => [
-                'context_enter' => '-c',
-                'context_quit' => '-b',
-                'quit' => '-q',
-                'help' => '?'
+                'context' => 'c',
+                'quit' => 'q',
+                'help' => 'h'
             ],
+            'command_prefix' => ':',
             'height_help' => 5,
             'result_border' => '=',
             'style' => [

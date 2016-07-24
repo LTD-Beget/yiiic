@@ -1,6 +1,6 @@
 <?php
 
-namespace LTDBeget\Yiiic\Handlers\Yiiic;
+namespace LTDBeget\Yiiic\Handlers;
 
 use LTDBeget\Yiiic\Exceptions\ContextHandlerException;
 use LTDBeget\Yiiic\Route;
@@ -18,13 +18,14 @@ class ContextHandler
     {
         $count = count($args);
 
-        if ($count >= 3) {
+        if ($count > 2) {
             throw new ContextHandlerException('Invalid format context command');
         }
 
         switch ($count) {
             case 1:
                 $route->setControllerID($args[0]);
+                $route->setActionID('');
                 break;
             case 2:
                 $route->setControllerID($args[0]);

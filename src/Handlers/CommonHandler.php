@@ -1,6 +1,6 @@
 <?php
 
-namespace LTDBeget\Yiiic\Handlers\App;
+namespace LTDBeget\Yiiic\Handlers;
 
 use LTDBeget\Yiiic\Exceptions\InvalidCommandException;
 use LTDBeget\Yiiic\Route;
