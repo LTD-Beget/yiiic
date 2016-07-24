@@ -17,11 +17,6 @@ use LTDBeget\Yiiic\Handlers\Yiiic\ContextHandler;
 class Yiiic extends Component
 {
 
-    const COMMAND_CONTEXT = '-c';
-    const COMMAND_BACK = '-b';
-    const COMMAND_QUIT = '-q';
-    const COMMAND_HELP = '?';
-
     /**
      * @var bool
      */
