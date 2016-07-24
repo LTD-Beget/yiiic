@@ -2,7 +2,6 @@
 
 namespace LTDBeget\Yiiic\Handlers\App;
 
-
 use LTDBeget\Yiiic\Exceptions\InvalidCommandException;
 
 class HelpHandler

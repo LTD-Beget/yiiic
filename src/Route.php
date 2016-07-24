@@ -59,11 +59,18 @@ class Route
         return $this->actionID;
     }
 
+    /**
+     * @param string $separator
+     * @return string
+     */
     public function getAsString(string $separator = '/') : string
     {
         return implode($separator, $this->getAsArray());
     }
 
+    /**
+     * @return array
+     */
     public function getAsArray() : array
     {
         return array_filter([$this->getControllerID(), $this->getActionID()]);
