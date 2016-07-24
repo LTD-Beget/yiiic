@@ -9,47 +9,48 @@ class ColFormatter implements ColFormatterInterface
 
     /**
      * @param array $data
-     * @param int   $heightCol
-     * @param int   $widthRow
+     * @param int $heightCol
+     * @param int $widthRow
      *
      * @return string
      */
     public function format(array $data, int $heightCol, int $widthRow) : string
     {
         $widthCol = $this->getWidthCol($data);
-        list($count, $isCanBePlaced) = $this->getColCountInfo($data, $heightCol, $widthCol, $widthRow);
-        $size = ($isCanBePlaced) ? $heightCol : ceil(count($data) / $count);
+        $size = $this->getColSize($data, $heightCol, $widthCol, $widthRow);
 
         return $this->getOutput(array_chunk($data, $size), $widthCol);
     }
 
     /**
      * @param array $data
-     * @param int   $heightCol
-     * @param int   $widthCol
-     * @param int   $widthScreen
+     * @param int $heightCol
+     * @param int $widthCol
+     * @param int $widthScreen
      *
-     * @return array [int number, bool canBeReplaced]
+     * @return int
      */
-    protected function getColCountInfo(array $data, int $heightCol, int $widthCol, int $widthScreen) : array
+    protected function getColSize(array $data, int $heightCol, int $widthCol, int $widthScreen) : int
     {
         // try to perform with client settings
-        $number         = (int) ceil(count($data) / $heightCol);
-        $availableWidth = (int) (ceil(($widthScreen - $this->padding) / $number) - $this->padding);
+        $count = (int)ceil(count($data) / $heightCol);
+        $availableWidth = (int)(ceil(($widthScreen - $this->padding) / $count) - $this->padding);
 
         $isCanBePlaced = $availableWidth >= $widthCol;
 
-        // otherwise using auto calculation
-        if (!$isCanBePlaced) {
-            $number = (int) ceil(($widthScreen - $this->padding) / $widthCol);
-        }
+        if ($isCanBePlaced) {
+            return $heightCol;
+        } else {
+            // otherwise using auto calculation
+            $count = (int)floor(($widthScreen - $this->padding) / $widthCol);
 
-        return [$number, $isCanBePlaced];
+            return ceil(count($data) / $count);
+        }
     }
 
     /**
      * @param array $data
-     * @param int   $chunks
+     * @param int $chunks
      *
      * @return array[]
      */
@@ -80,7 +81,7 @@ class ColFormatter implements ColFormatterInterface
 
     /**
      * @param array $data
-     * @param int   $offset
+     * @param int $offset
      *
      * @return string
      */
@@ -89,7 +90,7 @@ class ColFormatter implements ColFormatterInterface
         $offset = $this->padding + $offset;
 
         $output = PHP_EOL;
-        $i      = 0;
+        $i = 0;
 
         while (true) {
 
