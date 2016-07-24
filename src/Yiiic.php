@@ -18,9 +18,9 @@ class Yiiic extends Component
 {
 
     const COMMAND_CONTEXT = '-c';
-    const COMMAND_BACK    = '-b';
-    const COMMAND_QUIT    = '-q';
-    const COMMAND_HELP    = '?';
+    const COMMAND_BACK = '-b';
+    const COMMAND_QUIT = '-q';
+    const COMMAND_HELP = '?';
 
     /**
      * @var bool
@@ -100,6 +100,7 @@ class Yiiic extends Component
 
         do {
             $this->printLayout();
+            $this->printPrompt();
             $line = $this->readInput();
             $this->handleInput($line);
         } while (!$this->receivedQuitCommand);
@@ -114,7 +115,7 @@ class Yiiic extends Component
 
     protected function readInput()
     {
-        $line = trim(readline($this->getPrompt()));
+        $line = trim(readline());
         readline_add_history($line);
 
         return $line;
@@ -218,6 +219,11 @@ class Yiiic extends Component
         $this->printHelp();
     }
 
+    protected function printPrompt()
+    {
+        $this->writer->write($this->getPrompt(), $this->param('style.prompt'));
+    }
+
     protected function printBye()
     {
         $this->writer->writeln();
@@ -257,14 +263,14 @@ class Yiiic extends Component
 
     protected function getPrompt()
     {
-        $prefix = 'yiiic: ';
-        $route  = $this->route->getAsString();
+        $prompt = 'yiiic';
+        $route = $this->route->getAsString();
 
         if ($route) {
-            return $prefix . $this->route->getAsString() . ' ';
+            $prompt .= ' ' . $this->route->getAsString();
         }
 
-        return $prefix;
+        return $prompt . ': ';
     }
 
     /**
@@ -275,7 +281,7 @@ class Yiiic extends Component
      */
     protected function extractYiiicCommand(array $args)
     {
-        $list  = array_slice(array_intersect($this->getServiceCommands(), $args), 0);
+        $list = array_slice(array_intersect($this->getServiceCommands(), $args), 0);
         $count = count($list);
 
         if (!$count) {
@@ -400,27 +406,28 @@ class Yiiic extends Component
     protected function getDefaultParams() : array
     {
         return [
-            'ignore'        => ['interactive', 'help'],
-            'commands'      => [
+            'ignore' => ['interactive', 'help'],
+            'commands' => [
                 'context_enter' => '-c',
-                'context_quit'  => '-b',
-                'quit'          => '-q',
-                'help'          => '?'
+                'context_quit' => '-b',
+                'quit' => '-q',
+                'help' => '?'
             ],
-            'height_help'   => 5,
+            'height_help' => 5,
             'result_border' => '=',
-            'style'         => [
+            'style' => [
+                'prompt' => [Console::FG_GREEN, Console::BOLD],
                 'welcome' => [Console::FG_YELLOW, Console::BOLD],
-                'bye'     => [Console::FG_YELLOW, Console::BOLD],
-                'notice'  => [Console::FG_YELLOW, Console::BOLD],
-                'help'    => [
+                'bye' => [Console::FG_YELLOW, Console::BOLD],
+                'notice' => [Console::FG_YELLOW, Console::BOLD],
+                'help' => [
                     'title' => [Console::FG_YELLOW, Console::UNDERLINE],
                     'scope' => [Console::FG_YELLOW, Console::ITALIC]
                 ],
-                'result'  => [
+                'result' => [
                     'border' => [Console::FG_CYAN]
                 ],
-                'error'   => [Console::BG_RED]
+                'error' => [Console::BG_RED]
             ]
         ];
     }
