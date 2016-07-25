@@ -251,7 +251,7 @@ class Yiiic extends Component
      */
     protected function getPrompt() : string
     {
-        $prompt = 'yiiic';
+        $prompt = $this->param('prompt');
         $route = $this->context->getAsString();
 
         if ($route) {
@@ -460,6 +460,7 @@ class Yiiic extends Component
     {
         return [
             'ignore' => ['yiiic', 'help'],
+            'prompt' => 'yiiic',
             'commands' => [
                 'context' => 'c',
                 'quit' => 'q',
