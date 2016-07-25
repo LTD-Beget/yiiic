@@ -8,10 +8,8 @@ use yii\console\Request;
 use yii\helpers\ArrayHelper;
 use yii\helpers\Console;
 use LTDBeget\Yiiic\Exceptions\ApiReflectorNotFoundException;
-use LTDBeget\Yiiic\Exceptions\InvalidCommandException;
 use LTDBeget\Yiiic\Handlers\CommonHandler;
 use LTDBeget\Yiiic\Handlers\HelpHandler;
-use LTDBeget\Yiiic\Handlers\BackHandler;
 use LTDBeget\Yiiic\Handlers\ContextHandler;
 
 class Yiiic extends Component
