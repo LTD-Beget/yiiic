@@ -55,6 +55,8 @@ class Yiiic extends Component
      */
     protected $quit = false;
 
+    protected $helpShown = false;
+
     /**
      * @param array $params
      */
@@ -108,9 +110,10 @@ class Yiiic extends Component
     public function run()
     {
         $this->registerCompleteFn();
+        $this->printWelcome();
 
         do {
-            $this->printLayout();
+            $this->resolvePrintHelp();
             $line = $this->readInput();
             $this->handleInput($line);
         } while (!$this->quit);
@@ -410,6 +413,23 @@ class Yiiic extends Component
         $this->writer->writeln($border, $this->param('style.result.border'));
     }
 
+    protected function resolvePrintHelp()
+    {
+        switch ($this->param('show_help')) {
+            case ParamsInterface::SHOW_HELP_ALWAYS:
+                $this->printHelp();
+                break;
+            case ParamsInterface::SHOW_HELP_ONCE:
+
+                if (!$this->helpShown) {
+                    $this->printHelp();
+                    $this->helpShown = true;
+                }
+
+                break;
+        }
+    }
+
     protected function printHelp()
     {
         $context = $this->context->getAsArray();
@@ -421,13 +441,11 @@ class Yiiic extends Component
         $this->writer->writeln($help, $this->param('style.help.scope'));
     }
 
-    protected function printLayout()
+    protected function printWelcome()
     {
         $this->writer->writeln();
         $this->writer->writeln('Welcome to yii interactive console!', $this->param('style.welcome'));
         $this->writer->writeln();
-
-        $this->printHelp();
     }
 
     protected function printPrompt()
@@ -454,6 +472,7 @@ class Yiiic extends Component
         $this->writer->writeln();
         $this->writer->write($message, $this->param('style.error'));
         $this->writer->writeln();
+        $this->writer->writeln();
     }
 
     protected function getDefaultParams() : array
@@ -461,6 +480,7 @@ class Yiiic extends Component
         return [
             'ignore' => ['yiiic', 'help'],
             'prompt' => 'yiiic',
+            'show_help' => ParamsInterface::SHOW_HELP_ONCE,
             'commands' => [
                 'context' => 'c',
                 'quit' => 'q',

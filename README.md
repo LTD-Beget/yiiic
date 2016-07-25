@@ -87,6 +87,7 @@ $application = new yii\console\Application([
 	            // не выводить в хелпе
 	            'ignore' => ['yiiic', 'help'],
 	            'prompt' => 'yiiic',
+	            'show_help' => ParamsInterface::SHOW_HELP_*,
 	            // можно выставить свои
 	            'commands' => [
 	                'context' => 'c',
