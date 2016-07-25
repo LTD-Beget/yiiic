@@ -143,7 +143,7 @@ class Yiiic extends Component
     protected function completeHandler(string $input, array $info)
     {
         try {
-            $args = $this->parseInput($info['line_buffer']);
+            $args = $this->parseInput(substr($info['line_buffer'], 0, $info['end']));
 
             if (!empty($input)) {
                 array_pop($args);
