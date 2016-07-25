@@ -22,18 +22,23 @@ class ContextHandler
             throw new ContextHandlerException('Invalid format context command');
         }
 
+        $cid = '';
+        $aid = '';
+
         switch ($count) {
             case 1:
-                $route->setControllerID($args[0]);
-                $route->setActionID('');
+                $cid = $args[0];
                 break;
             case 2:
+                $cid = $args[0];
+                $aid = $args[1];
                 $route->setControllerID($args[0]);
                 $route->setActionID($args[1]);
                 break;
-            default:
-                throw new ContextHandlerException('Context command require arg[s]');
         }
+
+        $route->setControllerID($cid);
+        $route->setActionID($aid);
     }
 
 }
