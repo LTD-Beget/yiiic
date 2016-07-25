@@ -308,10 +308,7 @@ class Yiiic extends Component
             $readContext = true;
 
             if ($this->hasServiceCommand($args)) {
-
-                if ($this->isNonContextCommand(array_shift($args))) {
-                    $readContext = false;
-                }
+                list($readContext, $null) = $this->parseServiceCommand(array_shift($args));
             }
 
             if ($readContext) {
@@ -399,23 +396,6 @@ class Yiiic extends Component
         }
 
         return [true, substr($command, 1)];
-    }
-
-    /**
-     * @param string $command
-     * @return bool
-     */
-    protected function isNonContextCommand(string $command) : bool
-    {
-        return strpos($command, $this->getNonContextPrefix()) === 0;
-    }
-
-    /**
-     * @return string
-     */
-    protected function getNonContextPrefix() : string
-    {
-        return $this->commandPrefix . $this->commandPrefix;
     }
 
     /**
