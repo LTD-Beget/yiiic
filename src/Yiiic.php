@@ -440,7 +440,7 @@ class Yiiic extends Component
     protected function getDefaultParams() : array
     {
         return [
-            'ignore' => ['interactive', 'help'],
+            'ignore' => ['yiiic', 'help'],
             'commands' => [
                 'context' => 'c',
                 'quit' => 'q',
