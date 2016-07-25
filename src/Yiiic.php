@@ -243,7 +243,7 @@ class Yiiic extends Component
 
     protected function loadPrompt()
     {
-        exec(sprintf('echo "%s"', $this->getPrompt()));
+        return exec(sprintf('echo "%s"', $this->getPrompt()));
     }
 
     /**
