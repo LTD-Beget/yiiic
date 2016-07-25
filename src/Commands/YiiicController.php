@@ -2,6 +2,7 @@
 
 namespace LTDBeget\Yiiic\Commands;
 
+use LTDBeget\Yiiic\ArgsCompleter;
 use yii\console\Controller;
 
 use LTDBeget\Yiiic\ApiReflector;

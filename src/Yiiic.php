@@ -21,6 +21,11 @@ class Yiiic extends Component
     protected $params;
 
     /**
+     * @var ArgsCompleterInterface
+     */
+    protected $argsCompleter;
+
+    /**
      * @var ColFormatter
      */
     protected $colFormatter;
@@ -92,6 +97,14 @@ class Yiiic extends Component
         $this->colFormatter = $colFormatter;
     }
 
+    /**
+     * @param ArgsCompleterInterface $argsCompleter
+     */
+    public function setArgsCompleter(ArgsCompleterInterface $argsCompleter)
+    {
+        $this->argsCompleter = $argsCompleter;
+    }
+
     public function run()
     {
         $this->registerCompleteFn();
@@ -145,7 +158,7 @@ class Yiiic extends Component
             }
 
             try {
-                $scope = $this->reflectByArgs(...$args);
+                $scope = $this->reflectByArgs($input, ...$args);
             } catch (ApiReflectorNotFoundException $e) {
                 return $this->preventSegfaultValue();
             }
@@ -315,16 +328,29 @@ class Yiiic extends Component
      * @param array ...$args
      * @return array
      */
-    protected function reflectByArgs(...$args)
+    protected function reflectByArgs($input = null, ...$args)
     {
-        switch (func_num_args()) {
-            case 0:
-                return $this->reflection->commands();
-            case 1:
-                return $this->reflection->actions($args[0]);
-            default:
-                return $this->reflection->options($args[0], $args[1]);
+        $count = count($args);
+
+        if ($count === 0) {
+            return $this->reflection->commands();
         }
+
+        if ($count === 1) {
+            return $this->reflection->actions($args[0]);
+        }
+
+        if (!$this->argsCompleter) {
+            return $this->reflection->options($args[0], $args[1]);
+        }
+
+        $wantOptions = $input && strpos($input, ApiReflector::OPTION_PREFIX) === 0;
+
+        if ($wantOptions) {
+            return $this->reflection->options($args[0], $args[1]);
+        }
+
+        return $this->argsCompleter->getArgs($args[0], $args[1], $input, ...array_slice($args, 2));
     }
 
     /**
@@ -382,7 +408,7 @@ class Yiiic extends Component
     protected function printHelp()
     {
         $context = $this->context->getAsArray();
-        $scope = $this->reflectByArgs(...$context);
+        $scope = $this->reflectByArgs(null, ...$context);
         $help = $this->colFormatter->format($scope, $this->param('height_help'), $this->getScreenWidth());
         $title = $this->getHelpTitle(count($context));
 
