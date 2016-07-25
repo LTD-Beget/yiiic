@@ -96,7 +96,9 @@ class ApiReflector implements ReflectionInterface
             $api[$c] = [];
 
             foreach ($actions as $a) {
-                $api[$c][$a] = $controller->options($a);
+                $o = $controller->options($a);
+                asort($o);
+                $api[$c][$a] = $o;
             }
         }
 
