@@ -1,6 +1,6 @@
 <?php
 
-namespace LTDBeget\Yiiic\Commands;
+namespace LTDBeget\Yiiic\Controllers;
 
 use yii\console\Controller;
 

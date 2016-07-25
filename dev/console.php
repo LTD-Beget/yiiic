@@ -26,7 +26,7 @@ Yii::setAlias('LTDBeget/Yiiic', $root . '/src/');
 $application = new yii\console\Application([
     'id' => 'yii-console',
     'basePath' => $root . '/src',
-    'controllerNamespace' => 'LTDBeget\Yiiic\Commands',
+    'controllerNamespace' => 'LTDBeget\Yiiic\Controllers',
     'components' => [
         'yiiic' => [
             'class' => 'LTDBeget\Yiiic\Yiiic',
