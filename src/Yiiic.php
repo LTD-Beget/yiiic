@@ -111,7 +111,6 @@ class Yiiic extends Component
 
         do {
             $this->printLayout();
-            $this->printPrompt();
             $line = $this->readInput();
             $this->handleInput($line);
         } while (!$this->quit);
@@ -126,7 +125,7 @@ class Yiiic extends Component
 
     protected function readInput()
     {
-        $line = trim(readline());
+        $line = trim(readline($this->loadPrompt()));
         readline_add_history($line);
 
         return $line;
@@ -241,6 +240,12 @@ class Yiiic extends Component
         return Console::getScreenSize(true)[0];
     }
 
+
+    protected function loadPrompt()
+    {
+        exec(sprintf('echo "%s"', $this->getPrompt()));
+    }
+
     /**
      * @return string
      */
@@ -253,7 +258,7 @@ class Yiiic extends Component
             $prompt .= ' ' . $this->context->getAsString();
         }
 
-        return $prompt . ': ';
+        return Console::ansiFormat($prompt . ': ', $this->param('style.prompt'));
     }
 
     protected function getHelpTitle(int $sizeContext)
