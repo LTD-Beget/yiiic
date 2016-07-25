@@ -6,7 +6,7 @@ use yii\console\Controller;
 
 use LTDBeget\Yiiic\ApiReflector;
 use LTDBeget\Yiiic\ColFormatter;
-use LTDBeget\Yiiic\Route;
+use LTDBeget\Yiiic\Context;
 use LTDBeget\Yiiic\Writer;
 use LTDBeget\Yiiic\Yiiic;
 
@@ -26,7 +26,7 @@ class YiiicController extends Controller
         $yiiic->setReflection(new ApiReflector($yiiic->param('ignore')));
         $yiiic->setColFormatter(new ColFormatter());
         $yiiic->setWriter(new Writer());
-        $yiiic->setRoute(new Route());
+        $yiiic->setContext(new Context());
 
         $yiiic->run();
     }

@@ -3,7 +3,7 @@
 namespace LTDBeget\Yiiic\Handlers;
 
 use LTDBeget\Yiiic\Exceptions\InvalidCommandException;
-use LTDBeget\Yiiic\Route;
+use LTDBeget\Yiiic\Context;
 
 class CommonHandler
 {
@@ -20,7 +20,7 @@ class CommonHandler
             throw new InvalidCommandException('Valid command format: <controller> <action> [args] [options]');
         }
 
-        $route = (new Route(... array_slice($args, 0, 2)))->getAsString();
+        $route = (new Context(... array_slice($args, 0, 2)))->getAsString();
         $args = implode(' ', array_slice($args, 2));
 
         return [$route, $args];

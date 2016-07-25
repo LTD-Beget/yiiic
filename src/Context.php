@@ -2,7 +2,7 @@
 
 namespace LTDBeget\Yiiic;
 
-class Route
+class Context
 {
 
     /**
@@ -16,7 +16,7 @@ class Route
     protected $actionID = '';
 
     /**
-     * Route constructor.
+     * Context constructor.
      *
      * @param string|NULL $controllerID
      * @param string|NULL $actionID

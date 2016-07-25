@@ -16,29 +16,14 @@ class Yiiic extends Component
 {
 
     /**
-     * @var bool
-     */
-    protected $receivedQuitCommand = false;
-
-    /**
      * @var Dot
      */
     protected $params;
 
     /**
-     * @var string
+     * @var ColFormatter
      */
-    protected $commandPrefix;
-
-    /**
-     * @var Writer
-     */
-    protected $writer;
-
-    /**
-     * @var Route
-     */
-    protected $route;
+    protected $colFormatter;
 
     /**
      * @var ReflectionInterface
@@ -46,9 +31,24 @@ class Yiiic extends Component
     protected $reflection;
 
     /**
-     * @var ColFormatter
+     * @var Writer
      */
-    protected $colFormatter;
+    protected $writer;
+
+    /**
+     * @var Context
+     */
+    protected $context;
+
+    /**
+     * @var string
+     */
+    protected $commandPrefix;
+
+    /**
+     * @var bool
+     */
+    protected $quit = false;
 
     /**
      * @param array $params
@@ -77,11 +77,11 @@ class Yiiic extends Component
     }
 
     /**
-     * @param Route $route
+     * @param Context $context
      */
-    public function setRoute(Route $route)
+    public function setContext(Context $context)
     {
-        $this->route = $route;
+        $this->context = $context;
     }
 
     /**
@@ -101,7 +101,7 @@ class Yiiic extends Component
             $this->printPrompt();
             $line = $this->readInput();
             $this->handleInput($line);
-        } while (!$this->receivedQuitCommand);
+        } while (!$this->quit);
 
         $this->printBye();
     }
@@ -121,6 +121,46 @@ class Yiiic extends Component
 
     /**
      * @param string $input
+     * @param array $info
+     *
+     * @return array
+     */
+    protected function completeHandler(string $input, array $info)
+    {
+        try {
+            $args = $this->parseInput($info['line_buffer']);
+
+            if (!empty($input)) {
+                array_pop($args);
+            }
+
+            $readContext = true;
+
+            if ($this->hasServiceCommand($args)) {
+                list($readContext, $null) = $this->parseServiceCommand(array_shift($args));
+            }
+
+            if ($readContext) {
+                $args = ArrayHelper::merge($this->context->getAsArray(), $args);
+            }
+
+            try {
+                $scope = $this->reflectByArgs(...$args);
+            } catch (ApiReflectorNotFoundException $e) {
+                return $this->preventSegfaultValue();
+            }
+
+            return $this->getComplete($input, $scope);
+        } catch (\Throwable $e) {
+            //TODO: make terminate interactive mode?
+            $this->printError(sprintf('readline complete fail: %s', $e->getMessage()));
+
+            return $this->preventSegfaultValue();
+        }
+    }
+
+    /**
+     * @param string $input
      */
     protected function handleInput(string $input)
     {
@@ -135,7 +175,7 @@ class Yiiic extends Component
             }
 
             if ($readContext) {
-                $args = ArrayHelper::merge($this->route->getAsArray(), $args);
+                $args = ArrayHelper::merge($this->context->getAsArray(), $args);
             }
 
             if ($scmd) {
@@ -154,6 +194,7 @@ class Yiiic extends Component
         }
     }
 
+
     protected function handleAppCommand(array $params)
     {
         $this->printResultBorder();
@@ -171,12 +212,13 @@ class Yiiic extends Component
         switch ($command) {
             case $this->param('commands.help'):
                 $params = (new HelpHandler())->handle($args);
-                return $this->handleAppCommand($params);
+                $this->handleAppCommand($params);
+                break;
             case $this->param('commands.context'):
-                (new ContextHandler())->handle($this->route, $args);
+                (new ContextHandler())->handle($this->context, $args);
                 break;
             case $this->param('commands.quit'):
-                $this->receivedQuitCommand = true;
+                $this->quit = true;
                 break;
         }
     }
@@ -184,6 +226,150 @@ class Yiiic extends Component
     protected function getScreenWidth() : int
     {
         return Console::getScreenSize(true)[0];
+    }
+
+    /**
+     * @return string
+     */
+    protected function getPrompt() : string
+    {
+        $prompt = 'yiiic';
+        $route = $this->context->getAsString();
+
+        if ($route) {
+            $prompt .= ' ' . $this->context->getAsString();
+        }
+
+        return $prompt . ': ';
+    }
+
+    protected function getHelpTitle(int $sizeContext)
+    {
+        $str = '';
+
+        switch ($sizeContext) {
+            case 0:
+                $str = 'commands';
+                break;
+            case 1:
+                $str = 'actions';
+                break;
+            case 2:
+                $str = 'options';
+                break;
+        }
+
+        return 'Available ' . $str;
+    }
+
+    /**
+     * @return array
+     */
+    protected function getServiceCommands() : array
+    {
+        return array_values($this->param('commands'));
+    }
+
+    /**
+     * @uses Yiiic::onComplete()
+     */
+    protected function registerCompleteFn()
+    {
+        readline_completion_function([$this, 'onComplete']);
+    }
+
+    protected function onComplete(string $input)
+    {
+        return $this->completeHandler($input, readline_info());
+    }
+
+    /**
+     * @param string $input
+     * @param array $scope
+     *
+     * @return array
+     */
+    protected function getComplete(string $input, array $scope) : array
+    {
+        if (empty($input)) {
+
+            if (empty($scope)) {
+                return $this->preventSegfaultValue();
+            }
+
+            return $scope;
+        }
+
+        $complete = array_filter($scope, function ($elem) use ($input) {
+            return stripos($elem, $input) === 0;
+        });
+
+        if (empty($complete)) {
+            return $this->preventSegfaultValue();
+        }
+
+        return $complete;
+    }
+
+    /**
+     * @param array ...$args
+     * @return array
+     */
+    protected function reflectByArgs(...$args)
+    {
+        switch (func_num_args()) {
+            case 0:
+                return $this->reflection->commands();
+            case 1:
+                return $this->reflection->actions($args[0]);
+            default:
+                return $this->reflection->options($args[0], $args[1]);
+        }
+    }
+
+    /**
+     * @param string $input
+     *
+     * @return array
+     */
+    protected function parseInput(string $input) : array
+    {
+        return preg_split('/\s+/', $input, -1, PREG_SPLIT_NO_EMPTY);
+    }
+
+    /**
+     * @param string $command
+     *
+     * @return array [isContext, Command]
+     */
+    protected function parseServiceCommand(string $command) : array
+    {
+        $nonContext = $this->commandPrefix . $this->commandPrefix;
+        if (strpos($command, $nonContext) === 0) {
+            return [false, substr($command, 2)];
+        }
+
+        return [true, substr($command, 1)];
+    }
+
+    /**
+     * @param array $args
+     *
+     * @return bool
+     */
+    protected function hasServiceCommand(array $args) : bool
+    {
+        return !empty($args) && (strpos($args[0], $this->param('command_prefix')) === 0);
+    }
+
+    /**
+     * If readline_complete_function return empty, script can throw SEGFAULT
+     *
+     * @return array
+     */
+    protected function preventSegfaultValue() : array
+    {
+        return [''];
     }
 
     protected function printResultBorder()
@@ -195,9 +381,12 @@ class Yiiic extends Component
 
     protected function printHelp()
     {
-        list($title, $help) = $this->getContextInfo();
-        $this->writer->writeln(sprintf('Available %s:', $title), $this->param('style.help.title'));
-        $help = $this->colFormatter->format($help, $this->param('height_help'), $this->getScreenWidth());
+        $context = $this->context->getAsArray();
+        $scope = $this->reflectByArgs(...$context);
+        $help = $this->colFormatter->format($scope, $this->param('height_help'), $this->getScreenWidth());
+        $title = $this->getHelpTitle(count($context));
+
+        $this->writer->writeln($title, $this->param('style.help.title'));
         $this->writer->writeln($help, $this->param('style.help.scope'));
     }
 
@@ -234,187 +423,6 @@ class Yiiic extends Component
         $this->writer->writeln();
         $this->writer->write($message, $this->param('style.error'));
         $this->writer->writeln();
-    }
-
-    /**
-     * @return array
-     */
-    protected function getContextInfo() : array
-    {
-        $segments = $this->route->getAsArray();
-
-        switch (count($segments)) {
-            case 0:
-                return ['commands', $this->reflection->commands()];
-            case 1:
-                return ['actions', $this->reflection->actions($segments[0])];
-            case 2:
-                return ['options', $this->reflection->options($segments[0], $segments[1])];
-            default:
-                return ['commands', $this->reflection->commands()];
-        }
-    }
-
-    /**
-     * @return string
-     */
-    protected function getPrompt() : string
-    {
-        $prompt = 'yiiic';
-        $route = $this->route->getAsString();
-
-        if ($route) {
-            $prompt .= ' ' . $this->route->getAsString();
-        }
-
-        return $prompt . ': ';
-    }
-
-    /**
-     * @return array
-     */
-    protected function getServiceCommands() : array
-    {
-        return array_values($this->param('commands'));
-    }
-
-    /**
-     * @uses Yiiic::onComplete()
-     */
-    protected function registerCompleteFn()
-    {
-        readline_completion_function([$this, 'onComplete']);
-    }
-
-    protected function onComplete(string $input)
-    {
-        return $this->completeHandler($input, readline_info());
-    }
-
-    /**
-     * @param string $input
-     * @param array $info
-     * @return array
-     */
-    protected function completeHandler(string $input, array $info)
-    {
-        try {
-            $args = $this->parseInput($info['line_buffer']);
-
-            if (!empty($input)) {
-                array_pop($args);
-            }
-
-            $readContext = true;
-
-            if ($this->hasServiceCommand($args)) {
-                list($readContext, $null) = $this->parseServiceCommand(array_shift($args));
-            }
-
-            if ($readContext) {
-                $args = ArrayHelper::merge($this->route->getAsArray(), $args);
-            }
-
-            try {
-                $scope = $this->getCompleteScope($args);
-            } catch (ApiReflectorNotFoundException $e) {
-                return $this->preventSegfaultValue();
-            }
-
-            return $this->getComplete($input, $scope);
-        } catch (\Throwable $e) {
-            //TODO: make terminate interactive mode?
-            $this->printError(sprintf('readline complete fail: %s', $e->getMessage()));
-
-            return $this->preventSegfaultValue();
-        }
-    }
-
-    /**
-     * @param string $input
-     * @param array $scope
-     * @return array
-     */
-    protected function getComplete(string $input, array $scope) : array
-    {
-        if (empty($input)) {
-
-            if (empty($scope)) {
-                return $this->preventSegfaultValue();
-            }
-
-            return $scope;
-        }
-
-        $complete = array_filter($scope, function ($elem) use ($input) {
-            return stripos($elem, $input) === 0;
-        });
-
-        if (empty($complete)) {
-            return $this->preventSegfaultValue();
-        }
-
-        return $complete;
-    }
-
-    /**
-     * @param array $segments
-     * @return array
-     */
-    protected function getCompleteScope(array $segments) : array
-    {
-        $count = count($segments);
-
-        switch ($count) {
-            case 0: //case [<command...>]|[TAB]
-                return $this->reflection->commands();
-            case 1: // case <command> [<action...>]|[TAB]
-                return $this->reflection->actions($segments[0]);
-            default: // >=2 case <command> <action> [<option...>]|[TAB]
-                return $this->reflection->options($segments[0], $segments[1]);
-        }
-    }
-
-    /**
-     * @param string $input
-     * @return array
-     */
-    protected function parseInput(string $input) : array
-    {
-        return preg_split('/\s+/', $input, -1, PREG_SPLIT_NO_EMPTY);
-    }
-
-    /**
-     * @param string $command
-     * @return array [isContext, Command]
-     */
-    protected function parseServiceCommand(string $command) : array
-    {
-        $nonContext = $this->commandPrefix . $this->commandPrefix;
-        if (strpos($command, $nonContext) === 0) {
-            return [false, substr($command, 2)];
-        }
-
-        return [true, substr($command, 1)];
-    }
-
-    /**
-     * @param array $args
-     * @return bool
-     */
-    protected function hasServiceCommand(array $args) : bool
-    {
-        return !empty($args) && (strpos($args[0], $this->param('command_prefix')) === 0);
-    }
-
-    /**
-     * If readline_complete_function return empty, script can throw SEGFAULT
-     *
-     * @return array
-     */
-    protected function preventSegfaultValue() : array
-    {
-        return [''];
     }
 
     protected function getDefaultParams() : array

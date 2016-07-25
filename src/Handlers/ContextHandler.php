@@ -3,18 +3,18 @@
 namespace LTDBeget\Yiiic\Handlers;
 
 use LTDBeget\Yiiic\Exceptions\ContextHandlerException;
-use LTDBeget\Yiiic\Route;
+use LTDBeget\Yiiic\Context;
 
 class ContextHandler
 {
 
     /**
-     * @param Route $route
+     * @param Context $route
      * @param array $args
      *
      * @throws ContextHandlerException
      */
-    public function handle(Route $route, array $args)
+    public function handle(Context $route, array $args)
     {
         $count = count($args);
 
