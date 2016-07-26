@@ -22,11 +22,12 @@ require $root . '/vendor/autoload.php';
 require $root . '/vendor/yiisoft/yii2/Yii.php';
 
 Yii::setAlias('LTDBeget/Yiiic', $root . '/src/');
+Yii::setAlias('LTDBeget/Dev', $root . '/dev/');
 
 $application = new yii\console\Application([
     'id' => 'yii-console',
     'basePath' => $root . '/src',
-    'controllerNamespace' => 'LTDBeget\Yiiic\Controllers',
+    'controllerNamespace' => 'LTDBeget\Dev\Controllers',
     'components' => [
         'yiiic' => LTDBeget\Yiiic\Yiiic::build()
     ]
