@@ -136,18 +136,13 @@ class Yiiic extends Component
 
     /**
      * @param string $input
-     * @param array $info
+     * @param array $args
      *
      * @return array
      */
-    protected function completeHandler(string $input, array $info)
+    protected function completeHandler(string $input, array $args)
     {
         try {
-            $args = $this->parseInput(substr($info['line_buffer'], 0, $info['end']));
-
-            if (!empty($input)) {
-                array_pop($args);
-            }
 
             $readContext = true;
 
@@ -301,7 +296,14 @@ class Yiiic extends Component
 
     protected function onComplete(string $input)
     {
-        return $this->completeHandler($input, readline_info());
+        $info = readline_info();
+        $args = $this->parseInput(substr($info['line_buffer'], 0, $info['end']));
+
+        if (!empty($input)) {
+            array_pop($args);
+        }
+
+        return $this->completeHandler($input, $args);
     }
 
     /**
