@@ -60,10 +60,82 @@ class Yiiic extends Component
      */
     protected $helpShown = false;
 
-
-    public function init()
+    /**
+     * Yiiic constructor.
+     * @param ReflectionInterface $reflection
+     * @param WriterInterface $writer
+     * @param InputParser $inputParser
+     * @param Context $context
+     * @param ColFormatter $colFormatter
+     * @param array $config
+     */
+    public function __construct(
+        ReflectionInterface $reflection,
+        WriterInterface $writer,
+        InputParser $inputParser,
+        Context $context,
+        ColFormatter $colFormatter,
+        array $config
+    )
     {
-        $this->inputParser = new InputParser($this->getServiceCommands(), $this->param('without_context_prefix'));
+        $this->reflection = $reflection;
+        $this->inputParser = $inputParser;
+        $this->context = $context;
+        $this->colFormatter = $colFormatter;
+        $this->writer = $writer;
+
+        parent::__construct($config);
+    }
+
+    /**
+     * @param array $params
+     * @return \Closure
+     */
+    public static function build($params = [])
+    {
+        return function () use ($params) {
+            $params = ArrayHelper::merge(Yiiic::getDefaultParams(), $params);
+
+            return new Yiiic(
+                new ApiReflector($params['ignore']),
+                new Writer(),
+                new InputParser(array_values($params['commands']), $params['without_context_prefix']),
+                new Context(),
+                new ColFormatter(),
+                ['params' => $params]
+            );
+        };
+    }
+
+    public static function getDefaultParams() : array
+    {
+        return [
+            'ignore' => ['yiiic', 'help'],
+            'prompt' => 'yiiic',
+            'show_help' => ParamsInterface::SHOW_HELP_ONCE,
+            'commands' => [
+                'context' => 'c',
+                'quit' => 'q',
+                'help' => 'h'
+            ],
+            'without_context_prefix' => '/',
+            'height_help' => 5,
+            'result_border' => '=',
+            'style' => [
+                'prompt' => [Console::FG_GREEN, Console::BOLD],
+                'welcome' => [Console::FG_YELLOW, Console::BOLD],
+                'bye' => [Console::FG_YELLOW, Console::BOLD],
+                'notice' => [Console::FG_YELLOW, Console::BOLD],
+                'help' => [
+                    'title' => [Console::FG_YELLOW, Console::UNDERLINE],
+                    'scope' => [Console::FG_YELLOW, Console::ITALIC]
+                ],
+                'result' => [
+                    'border' => [Console::FG_CYAN]
+                ],
+                'error' => [Console::BG_RED]
+            ]
+        ];
     }
 
     /**
@@ -73,38 +145,6 @@ class Yiiic extends Component
     {
         $params = ArrayHelper::merge($this->getDefaultParams(), $params);
         $this->params = Dot::with($params);
-    }
-
-    /**
-     * @param WriterInterface $writer
-     */
-    public function setWriter(WriterInterface $writer)
-    {
-        $this->writer = $writer;
-    }
-
-    /**
-     * @param ReflectionInterface $reflection
-     */
-    public function setReflection(ReflectionInterface $reflection)
-    {
-        $this->reflection = $reflection;
-    }
-
-    /**
-     * @param Context $context
-     */
-    public function setContext(Context $context)
-    {
-        $this->context = $context;
-    }
-
-    /**
-     * @param ColFormatterInterface $colFormatter
-     */
-    public function setColFormatter(ColFormatterInterface $colFormatter)
-    {
-        $this->colFormatter = $colFormatter;
     }
 
     /**
@@ -162,14 +202,16 @@ class Yiiic extends Component
 
             return $this->handleAppCommand($params);
         } catch (\Throwable $e) {
-            $this->printError(sprintf('readline complete fail: %s', $e->getMessage()));
-            $this->writer->writeln();
-            $this->printError(sprintf('readline complete fail: %s', $e->getFile()));
-            $this->writer->writeln();
-            $this->printError(sprintf('readline complete fail: %s', $e->getLine()));
+            $this->printError(sprintf('readline complete fail: %s', $e->getTraceAsString()));
         }
     }
 
+    /**
+     * readline_completion_function callback
+     *
+     * @param string $input
+     * @return array
+     */
     protected function onComplete(string $input)
     {
         try {
@@ -186,11 +228,7 @@ class Yiiic extends Component
             return $this->getComplete($input, $scope);
         } catch (\Throwable $e) {
             //TODO: make terminate interactive mode?
-            $this->printError(sprintf('readline complete fail: %s', $e->getMessage()));
-            $this->writer->writeln();
-            $this->printError(sprintf('readline complete fail: %s', $e->getFile()));
-            $this->writer->writeln();
-            $this->printError(sprintf('readline complete fail: %s', $e->getLine()));
+            $this->printError(sprintf('readline complete fail: %s', $e->getTraceAsString()));
 
             return $this->preventSegfaultValue();
         }
@@ -270,21 +308,12 @@ class Yiiic extends Component
     }
 
     /**
-     * @return array
-     */
-    protected function getServiceCommands() : array
-    {
-        return array_values($this->param('commands'));
-    }
-
-    /**
      * @uses Yiiic::onComplete()
      */
     protected function registerCompleteFn()
     {
         readline_completion_function([$this, 'onComplete']);
     }
-
 
     /**
      * @param string $input
@@ -445,36 +474,4 @@ class Yiiic extends Component
         $this->writer->writeln();
         $this->writer->writeln();
     }
-
-    protected function getDefaultParams() : array
-    {
-        return [
-            'ignore' => ['yiiic', 'help'],
-            'prompt' => 'yiiic',
-            'show_help' => ParamsInterface::SHOW_HELP_ONCE,
-            'commands' => [
-                'context' => 'c',
-                'quit' => 'q',
-                'help' => 'h'
-            ],
-            'without_context_prefix' => '/',
-            'height_help' => 5,
-            'result_border' => '=',
-            'style' => [
-                'prompt' => [Console::FG_GREEN, Console::BOLD],
-                'welcome' => [Console::FG_YELLOW, Console::BOLD],
-                'bye' => [Console::FG_YELLOW, Console::BOLD],
-                'notice' => [Console::FG_YELLOW, Console::BOLD],
-                'help' => [
-                    'title' => [Console::FG_YELLOW, Console::UNDERLINE],
-                    'scope' => [Console::FG_YELLOW, Console::ITALIC]
-                ],
-                'result' => [
-                    'border' => [Console::FG_CYAN]
-                ],
-                'error' => [Console::BG_RED]
-            ]
-        ];
-    }
-
 }

@@ -2,7 +2,7 @@
 
 namespace LTDBeget\Yiiic;
 
-class ColFormatter implements ColFormatterInterface
+class ColFormatter
 {
 
     protected $padding = 2;

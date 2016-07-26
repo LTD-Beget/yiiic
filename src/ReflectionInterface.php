@@ -8,6 +8,12 @@ interface ReflectionInterface
     const OPTION_PREFIX = '--';
 
     /**
+     * ReflectionInterface constructor.
+     * @param array $ignore
+     */
+    public function __construct(array $ignore);
+
+    /**
      * @return array
      */
     public function commands() : array;
