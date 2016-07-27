@@ -217,8 +217,7 @@ class Yiiic extends Component
     {
         try {
             $buffer = $this->prepareBuffer($this->getLineBuffer(), $input);
-
-            list($args, $null) = $this->inputParser->parse($buffer, $this->context->getAsArray());
+            $args = $this->inputParser->parse($buffer, $this->context->getAsArray())[0];
 
             try {
                 $scope = $this->reflectByArgs($input, ...$args);
@@ -235,18 +234,33 @@ class Yiiic extends Component
         }
     }
 
+    /**
+     * @param array $params
+     */
     protected function handleAppCommand(array $params)
     {
         $this->printResultBorder();
         $this->writer->writeln();
 
-        \Yii::$app->handleRequest(new Request(['params' => $params]));
+        $this->runAction($params);
 
         $this->writer->writeln();
         $this->printResultBorder();
         $this->writer->writeln();
     }
 
+    /**
+     * @param array $params
+     */
+    protected function runAction(array $params)
+    {
+        \Yii::$app->handleRequest(new Request(['params' => $params]));
+    }
+
+    /**
+     * @param string $command
+     * @param array $args
+     */
     protected function handleServiceCommand(string $command, array $args)
     {
         switch ($command) {
