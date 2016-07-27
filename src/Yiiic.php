@@ -202,7 +202,8 @@ class Yiiic extends Component
 
             return $this->handleAppCommand($params);
         } catch (\Throwable $e) {
-            $this->printError(sprintf('readline complete fail: %s', $e->getTraceAsString()));
+            $this->printError(sprintf('yiiic handle input: %s', $e->getMessage()));
+            $this->printError($e->getTraceAsString());
         }
     }
 
