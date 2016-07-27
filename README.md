@@ -13,49 +13,27 @@
 
 ##<a name="integration">Интеграция в проект</a>
 
-Добавить `yiiic` компонент в конфиг консольного приложения
+Добавить `yiiic` компонент в конфиг консольного приложения, в `build` передается массив параметров
 ```php
 $application = new yii\console\Application([
     ...
     'components' => [
-        'yiiic' => [
-            'class' => 'LTDBeget\Yiiic\Yiiic',
-            'params' => []
-        ]
+	    //Для реализации чего то недефолтного пишем свой build с инжектом
+	    //своих реализаций
+        'yiiic' => LTDBeget\Yiiic\Yiiic::build()
     ]
 ]);
 ```
-Добавить консольный конроллер  как точку входа в интерактивный режим. Отнаследовать его от `LTDBeget\Yiiic\Controllers\YiiicController` либо создать `actionIndex` и в нем прописать код инициализации как в примере ниже.
+Добавить консольный конроллер  как точку входа в интерактивный режим, внутри дефолтного экшена прописать код инициализации.
 ```php
-namespace LTDBeget\Yiiic\Controllers;
-
 use yii\console\Controller;
-
-use LTDBeget\Yiiic\ApiReflector;
-use LTDBeget\Yiiic\ColFormatter;
-use LTDBeget\Yiiic\Context;
-use LTDBeget\Yiiic\Writer;
-use LTDBeget\Yiiic\Yiiic;
 
 class YiiicController extends Controller
 {
 
     public function actionIndex()
     {
-        $yiiic = \Yii::$app->get('yiiic');
-        
-		// Обязательные зависимости
-        $yiiic->setReflection(new ApiReflector($yiiic->param('ignore')));
-        $yiiic->setColFormatter(new ColFormatter());
-        $yiiic->setWriter(new Writer());
-        $yiiic->setContext(new Context());
-
-		//Опционально
-		 
-	    //Если хочется комплит по агрументам пишем реализацию и инжектим
-        $yiiic->setArgsCompleter(LTDBeget\Yiiic\ArgsCompleterInterface)	
-
-        $yiiic->run();
+        (\Yii::$app->get('yiiic'))->run();
     }
 
 }
@@ -65,61 +43,56 @@ class YiiicController extends Controller
 При работе с консолью, нажатие TAB вызывает автоподсказку возможных контроллеров/экшенов/опций.  При реализации интерфейса `ArgsCompleterInterface`  возможен комплит по аргументам. Автокомплит работает по контексту, то есть если вы ввели `migrate [press TAB]` и нажали таб, то получите список экшенов для `migrate`.
 
 ##<a name="commands">Служебные комманды</a>
-- :c - перейти в контекст
-- :h - помощь
-- :q - выход
+- c - перейти в контекст
+- h - помощь
+- q - выход
 
-###`:c [controller] [action]`  
-Изначально вы находитесь в контексте `yiiic`.  Можно перейти в контекст контроллера или экшена. Находясь в контексте мы уменьшаем количество ввода, для выполнения комманд одного контроллера или конкретных экшенов.
-
-###`:h [controller] [action]` 
-
-Для `:c` и `:h` можно указывать абсолютную нотацию `::`. При абсолютной нотации текущий контекст не учитывается. То есть если вы находитесь в контексте `migrate` и ввели `::с ` и нажали TAB, то автокомплит будет работать как будто контекста нет и вы получите список всех контроллеров.   
+Комманды можно передавать в любом месте, следующие вызовы равнозначны
+```bash
+migrate create c
+c migrate create
+```
+Для запуска комманды без контекста используется префикс `/`
 
 ##<a name="configuration">Конфигурация</a>
-Для всей конфигурации есть дефолтный preset, поэтому можно оставить `params = []`
+Для всей конфигурации есть дефолтный preset
 ```php
 $application = new yii\console\Application([
     'components' => [
-        'yiiic' => [
-            'class' => 'LTDBeget\Yiiic\Yiiic',
-            'params' => [
-	            // не выводить в хелпе
-	            'ignore' => ['yiiic', 'help'],
-	            'prompt' => 'yiiic',
-	            'show_help' => ParamsInterface::SHOW_HELP_*,
-	            // можно выставить свои
-	            'commands' => [
-	                'context' => 'c',
-	                'quit' => 'q',
-	                'help' => 'h'
-	            ],
-	            //префикс для служебных комманд,
-	            //удвоение дает работу без контекста
-	            'command_prefix' => ':',
-	            // высота в строках хелпа, если не будет
-	            // помещаться, рассчитается так чтоб влезло
-	            'height_help' => 5,
-	            // можно выставить нескучный символ
-	            // для результата выполнения экшена
-	            'result_border' => '=',
-	            // стили для стильных
-	            'style' => [
-	                'prompt' => [Console::FG_GREEN, Console::BOLD],
-	                'welcome' => [Console::FG_YELLOW, Console::BOLD],
-	                'bye' => [Console::FG_YELLOW, Console::BOLD],
-	                'notice' => [Console::FG_YELLOW, Console::BOLD],
-	                'error' => [Console::BG_RED],
-	                'help' => [
-	                    'title' => [Console::FG_YELLOW, Console::UNDERLINE],
-	                    'scope' => [Console::FG_YELLOW, Console::ITALIC]
-	                ],
-	                'result' => [
-	                    'border' => [Console::FG_CYAN]
-	                ]
-	            ]
+        'yiiic' => LTDBeget\Yiiic\Yiiic::build([
+			// не выводить в хелпе
+			'ignore' => ['yiiic', 'help'],
+		     'prompt' => 'yiiic',
+            'show_help' => ParamsInterface::SHOW_HELP_*,
+            // можно выставить свои
+            'commands' => [
+                'context' => 'c',
+                'quit' => 'q',
+                'help' => 'h'
+            ],
+            'without_context_prefix' => '/',
+            // высота в строках хелпа, если не будет
+            // помещаться, рассчитается так чтоб влезло
+            'height_help' => 5,
+            // можно выставить нескучный символ
+            // для результата выполнения экшена
+            'result_border' => '=',
+            // стили для стильных
+            'style' => [
+                'prompt' => [Console::FG_GREEN, Console::BOLD],
+                'welcome' => [Console::FG_YELLOW, Console::BOLD],
+                'bye' => [Console::FG_YELLOW, Console::BOLD],
+                'notice' => [Console::FG_YELLOW, Console::BOLD],
+                'error' => [Console::BG_RED],
+                'help' => [
+                    'title' => [Console::FG_YELLOW, Console::UNDERLINE],
+                    'scope' => [Console::FG_YELLOW, Console::ITALIC]
+                ],
+                'result' => [
+                    'border' => [Console::FG_CYAN]
+                ]
             ]
-        ]
+        ])
     ]
 ]);
 ```
