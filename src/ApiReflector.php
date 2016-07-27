@@ -90,7 +90,7 @@ class ApiReflector implements ReflectionInterface
             /**
              * @var Controller $controller
              */
-            list($controller, $null) = \Yii::$app->createController($c);
+            $controller = \Yii::$app->createController($c)[0];
             $actions = $this->getActions($controller);
 
             $api[$c] = [];
