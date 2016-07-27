@@ -91,7 +91,7 @@ class Yiiic extends Component
      * @param array $params
      * @return \Closure
      */
-    public static function build($params = [])
+    public static function build(array $params = [])
     {
         return function () use ($params) {
             $params = ArrayHelper::merge(Yiiic::getDefaultParams(), $params);
