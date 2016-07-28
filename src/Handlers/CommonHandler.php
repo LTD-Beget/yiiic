@@ -21,9 +21,10 @@ class CommonHandler
         }
 
         $route = (new Context(... array_slice($args, 0, 2)))->getAsString();
-        $args = implode(' ', array_slice($args, 2));
+        $args = array_slice($args, 2);
+        array_unshift($args, $route);
 
-        return [$route, $args];
+        return $args;
     }
 
 }
