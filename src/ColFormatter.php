@@ -107,7 +107,7 @@ class ColFormatter
                     $value = $column[$i];
                 }
 
-                $output .= $value . $this->getSpace($offset - strlen($value));
+                $output .= $value . $this->getSpace($offset - strlen($value) - 1);
             }
 
             $i++;
