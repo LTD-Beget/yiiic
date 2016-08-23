@@ -20,21 +20,16 @@ $application = new yii\console\Application([
     'components' => [
 	    //Для реализации чего то недефолтного пишем свой build с инжектом
 	    //своих реализаций
-        'yiiic' => LTDBeget\Yiiic\Yiiic::build()
+        'yiiic' => LTDBeget\Yiiic\build()
     ]
 ]);
 ```
-Добавить консольный конроллер  как точку входа в интерактивный режим, внутри дефолтного экшена прописать код инициализации.
+Отнаследовать консольный конроллер  как точку входа в интерактивный режим от `\LTDBeget\Yiiic\YiiicController`
 ```php
 use yii\console\Controller;
 
-class YiiicController extends Controller
+class YiiicController extends \LTDBeget\Yiiic\YiiicController
 {
-
-    public function actionIndex()
-    {
-        (\Yii::$app->get('yiiic'))->run();
-    }
 
 }
 ```
@@ -55,44 +50,50 @@ c migrate create
 Для запуска комманды без контекста используется префикс `/`
 
 ##<a name="configuration">Конфигурация</a>
-Для всей конфигурации есть дефолтный preset
+Конфигурация в  порядке возрастания приоритета  `[default] <- [build()] <- [cli config] <- [cli option]`
+-  default - дефолтный пресет
+-  build() - то что передается в билд функцию/метод
+- cli config - путь к конфигу при запуске yiiic режима (`yii yiiic --config=custom/config/path`) 
+- cli option - значение конкретного опшена, список доступных в хелпе
+
+Дефолтный пресет
 ```php
-$application = new yii\console\Application([
-    'components' => [
-        'yiiic' => LTDBeget\Yiiic\Yiiic::build([
-			// не выводить в хелпе
-			'ignore' => ['yiiic', 'help'],
-		     'prompt' => 'yiiic',
-            'show_help' => ParamsInterface::SHOW_HELP_*,
-            // можно выставить свои
-            'commands' => [
-                'context' => 'c',
-                'quit' => 'q',
-                'help' => 'h'
-            ],
-            'without_context_prefix' => '/',
-            // высота в строках хелпа, если не будет
-            // помещаться, рассчитается так чтоб влезло
-            'height_help' => 5,
-            // можно выставить нескучный символ
-            // для результата выполнения экшена
-            'result_border' => '=',
-            // стили для стильных
-            'style' => [
-                'prompt' => [Console::FG_GREEN, Console::BOLD],
-                'welcome' => [Console::FG_YELLOW, Console::BOLD],
-                'bye' => [Console::FG_YELLOW, Console::BOLD],
-                'notice' => [Console::FG_YELLOW, Console::BOLD],
-                'error' => [Console::BG_RED],
-                'help' => [
-                    'title' => [Console::FG_YELLOW, Console::UNDERLINE],
-                    'scope' => [Console::FG_YELLOW, Console::ITALIC]
-                ],
-                'result' => [
-                    'border' => [Console::FG_CYAN]
-                ]
-            ]
-        ])
+// config.php
+
+return [
+    // не выводить в хелпе
+    'ignore' => ['yiiic', 'help'],
+    'prompt' => 'yiiic',
+    'show_help' => Configuration::SHOW_HELP_*,
+    // если вылезет exception
+    'show_trace' => false,
+    // можно выставить свои
+    'commands' => [
+        'context' => 'c',
+        'quit' => 'q',
+        'help' => 'h'
+    ],
+    'without_context_prefix' => '/',
+    // высота в строках хелпа, если не будет
+    // помещаться, рассчитается так чтоб влезло
+    'height_help' => 5,
+    // можно выставить нескучный символ
+    // для результата выполнения экшена
+    'result_border' => '=',
+    // стили для стильных
+    'style' => [
+        'prompt' => [Console::FG_GREEN, Console::BOLD],
+        'welcome' => [Console::FG_YELLOW, Console::BOLD],
+        'bye' => [Console::FG_YELLOW, Console::BOLD],
+        'notice' => [Console::FG_YELLOW, Console::BOLD],
+        'error' => [Console::BG_RED],
+        'help' => [
+            'title' => [Console::FG_YELLOW, Console::UNDERLINE],
+            'scope' => [Console::FG_YELLOW, Console::ITALIC]
+        ],
+        'result' => [
+            'border' => [Console::FG_CYAN]
+        ]
     ]
-]);
+];
 ```

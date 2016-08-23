@@ -13,7 +13,7 @@
     "require": {
         "php": "7.0.*",
         "yiisoft/yii2": "~2.0",
-        "ridzhi/smarrt": "^1.0"
+        "ridzhi/smarrt": "~2.0"
     },
     "require-dev": {
         "phpunit/phpunit": "5.4.*"
@@ -23,7 +23,8 @@
             "LTDBeget\\Yiiic\\": [
                 "src/"
             ]
-        }
+        },
+        "files": ["src/functions.php"]
     },
     "autoload-dev": {
         "psr-4": {

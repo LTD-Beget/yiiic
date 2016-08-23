@@ -86,7 +86,21 @@ class InputParser
      */
     protected function explode(string $input) : array
     {
-        return preg_split('/\s+/', $input, -1, PREG_SPLIT_NO_EMPTY);
+        $tmp =  preg_split('/(".*?")/', $input, -1, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE);
+        $result = [];
+
+        foreach ($tmp as $str) {
+            $str = trim($str);
+
+            if($str === '') {
+                continue;
+            }
+
+            $new = (strpos($str, '"') === 0) ? [trim($str, '"')] : preg_split('/\s+/', $str, -1, PREG_SPLIT_NO_EMPTY);
+            $result = array_merge($result, $new);
+        }
+
+        return $result;
     }
 
     /**

@@ -29,7 +29,7 @@ $application = new yii\console\Application([
     'basePath' => $root . '/src',
     'controllerNamespace' => 'LTDBeget\Dev\Controllers',
     'components' => [
-        'yiiic' => LTDBeget\Yiiic\Yiiic::build()
+        'yiiic' => LTDBeget\Yiiic\build()
     ]
 ]);
 
