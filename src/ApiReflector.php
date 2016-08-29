@@ -12,7 +12,7 @@ use LTDBeget\Yiiic\Exceptions\InvalidCommandException;
  *
  * @package yiiiconsole
  */
-class ApiReflector implements ReflectionInterface
+class ApiReflector implements ApiReflectorInterface
 {
 
     /**
@@ -65,7 +65,7 @@ class ApiReflector implements ReflectionInterface
      *
      * @return array
      */
-    public function options(string $controllerID, string $actionID = 'index', $prefix = ReflectionInterface::OPTION_PREFIX) : array
+    public function options(string $controllerID, string $actionID = 'index', $prefix = ApiReflectorInterface::OPTION_PREFIX) : array
     {
         $this->validateActionID($controllerID, $actionID);
 

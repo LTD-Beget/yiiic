@@ -2,16 +2,10 @@
 
 namespace LTDBeget\Yiiic;
 
-interface ReflectionInterface
+interface ApiReflectorInterface
 {
 
     const OPTION_PREFIX = '--';
-
-    /**
-     * ReflectionInterface constructor.
-     * @param array $ignore
-     */
-    public function __construct(array $ignore);
 
     /**
      * @return array

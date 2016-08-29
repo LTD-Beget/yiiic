@@ -2,9 +2,13 @@
 
 namespace LTDBeget\Yiiic;
 
+use LTDBeget\Yiiic\events\AfterRunActionEvent;
+use LTDBeget\Yiiic\events\BeforeRunActionEvent;
+use LTDBeget\Yiiic\Exceptions\InvalidEntityException;
 use Smarrt\Dot;
 use yii\base\Component;
 use yii\console\Request;
+use yii\helpers\ArrayHelper;
 use yii\helpers\Console;
 use LTDBeget\Yiiic\Exceptions\ApiReflectorNotFoundException;
 use LTDBeget\Yiiic\Handlers\CommonHandler;
@@ -14,25 +18,28 @@ use LTDBeget\Yiiic\Handlers\ContextHandler;
 class Yiiic extends Component
 {
 
-    /**
-     * @var Dot
-     */
-    protected $params;
+    const EVENT_BEFORE_RUN_ACTION = 'beforeRunAction';
+    const EVENT_AFTER_RUN_ACTION = 'afterRunAction';
 
     /**
-     * @var ArgsCompleterInterface
+     * @var array
      */
-    protected $argsCompleter;
+    protected $_entities;
+
+    /**
+     * @var array
+     */
+    protected $_options;
+
+    /**
+     * @var ApiReflectorInterface
+     */
+    protected $apiReflector;
 
     /**
      * @var ColFormatter
      */
     protected $colFormatter;
-
-    /**
-     * @var ReflectionInterface
-     */
-    protected $reflection;
 
     /**
      * @var Writer
@@ -50,6 +57,11 @@ class Yiiic extends Component
     protected $inputParser;
 
     /**
+     * @var ArgsCompleterInterface
+     */
+    protected $argsCompleter;
+
+    /**
      * @var bool
      */
     protected $quit = false;
@@ -59,39 +71,39 @@ class Yiiic extends Component
      */
     protected $helpShown = false;
 
-    /**
-     * Yiiic constructor.
-     * @param ReflectionInterface $reflection
-     * @param WriterInterface $writer
-     * @param InputParser $inputParser
-     * @param Context $context
-     * @param ColFormatter $colFormatter
-     * @param array $config
-     */
-    public function __construct(
-        ReflectionInterface $reflection,
-        WriterInterface $writer,
-        InputParser $inputParser,
-        Context $context,
-        ColFormatter $colFormatter,
-        array $config
-    )
-    {
-        $this->reflection = $reflection;
-        $this->writer = $writer;
-        $this->inputParser = $inputParser;
-        $this->context = $context;
-        $this->colFormatter = $colFormatter;
 
-        parent::__construct($config);
+    public function init()
+    {
+        $this->prepareConf();
+
+        $this->context = new Context();
+        $this->inputParser = new InputParser(array_values($this->_options['commands']), $this->_options['without_context_prefix']);
+        $this->colFormatter = new ColFormatter();
+        $this->writer = new Writer();
+
+        try {
+            $this->apiReflector = $this->buildEntity('apiReflector', ApiReflectorInterface::class);
+        } catch (InvalidEntityException $e) {
+            $this->printError($e->getMessage());
+        }
+
     }
 
     /**
-     * @param array $params
+     * @param array $options
      */
-    public function setParams(array $params = [])
+    public function setOptions(array $options = [])
     {
-        $this->params = new Dot($params);
+        $this->_options = $options;
+
+    }
+
+    /**
+     * @param array $entities
+     */
+    public function setEntities(array $entities = [])
+    {
+        $this->_entities = $entities;
     }
 
     /**
@@ -145,7 +157,7 @@ class Yiiic extends Component
             return $this->handleAppCommand($params);
         } catch (\Throwable $e) {
 
-            if ($this->params['show_trace']) {
+            if ($this->_options['show_trace']) {
                 $this->printError($e->getTraceAsString());
             }
 
@@ -188,7 +200,15 @@ class Yiiic extends Component
         $this->printResultBorder();
         $this->writer->writeln();
 
+        $event = new BeforeRunActionEvent();
+        $event->params = $params;
+        $this->trigger(self::EVENT_BEFORE_RUN_ACTION, $event);
+
         $this->runAction($params);
+
+        $event = new AfterRunActionEvent();
+        $event->params = $params;
+        $this->trigger(self::EVENT_AFTER_RUN_ACTION, $event);
 
         $this->writer->writeln();
         $this->printResultBorder();
@@ -210,14 +230,14 @@ class Yiiic extends Component
     protected function handleServiceCommand(string $command, array $args)
     {
         switch ($command) {
-            case $this->params['commands.help']:
+            case $this->_options['commands.help']:
                 $params = (new HelpHandler())->handle($args);
                 $this->handleAppCommand($params);
                 break;
-            case $this->params['commands.context']:
+            case $this->_options['commands.context']:
                 (new ContextHandler())->handle($this->context, $args);
                 break;
-            case $this->params['commands.quit']:
+            case $this->_options['commands.quit']:
                 $this->quit = true;
                 break;
         }
@@ -238,14 +258,14 @@ class Yiiic extends Component
      */
     protected function getPrompt() : string
     {
-        $prompt = $this->params['prompt'];
+        $prompt = $this->_options['prompt'];
         $route = $this->context->getAsString();
 
         if ($route) {
             $prompt .= ' ' . $this->context->getAsString();
         }
 
-        return Console::ansiFormat($prompt . ': ', $this->params['style.prompt']);
+        return Console::ansiFormat($prompt . ': ', $this->_options['style.prompt']);
     }
 
     protected function getHelpTitle(int $sizeContext)
@@ -312,21 +332,21 @@ class Yiiic extends Component
         $count = count($args);
 
         if ($count === 0) {
-            return $this->reflection->commands();
+            return $this->apiReflector->commands();
         }
 
         if ($count === 1) {
-            return $this->reflection->actions($args[0]);
+            return $this->apiReflector->actions($args[0]);
         }
 
         if (!$this->argsCompleter) {
-            return $this->reflection->options($args[0], $args[1]);
+            return $this->apiReflector->options($args[0], $args[1]);
         }
 
         $wantOptions = $input && strpos($input, ApiReflector::OPTION_PREFIX) === 0;
 
         if ($wantOptions) {
-            return $this->reflection->options($args[0], $args[1]);
+            return $this->apiReflector->options($args[0], $args[1]);
         }
 
         return $this->argsCompleter->getArgs($args[0], $args[1], $input, ...array_slice($args, 2));
@@ -368,11 +388,11 @@ class Yiiic extends Component
 
     protected function resolvePrintHelp()
     {
-        switch ($this->params['show_help']) {
-            case Configuration::SHOW_HELP_ALWAYS:
+        switch ($this->_options['show_help']) {
+            case Conf::SHOW_HELP_ALWAYS:
                 $this->printHelp();
                 break;
-            case Configuration::SHOW_HELP_ONCE:
+            case Conf::SHOW_HELP_ONCE:
 
                 if (!$this->helpShown) {
                     $this->printHelp();
@@ -383,28 +403,48 @@ class Yiiic extends Component
         }
     }
 
+    protected function buildEntity(string $name, string $interface)
+    {
+        $entity = $this->_entities[$name]($this->_options);
+
+        if (!($entity instanceof $interface)) {
+            throw new InvalidEntityException(sprintf('%s must implement %s', $name, $interface));
+        }
+
+        return $entity;
+    }
+
+    protected function prepareConf()
+    {
+        $default = Conf::getDefault();
+        $cli = Conf::getFromCLI();
+
+        $this->_options = new Dot(ArrayHelper::merge($default['options'], $this->_options ?? [], $cli['options'] ?? []));
+        $this->_entities = ArrayHelper::merge($default['entities'], $this->_entities ?? [], $cli['entities'] ?? []);
+    }
+
     protected function printResultBorder()
     {
         $length = $this->getScreenWidth();
-        $border = implode('', array_fill(0, $length - 1, $this->params['result_border']));
-        $this->writer->writeln($border, $this->params['style.result.border']);
+        $border = implode('', array_fill(0, $length - 1, $this->_options['result_border']));
+        $this->writer->writeln($border, $this->_options['style.result.border']);
     }
 
     protected function printHelp()
     {
         $context = $this->context->getAsArray();
         $scope = $this->reflectByArgs(null, ...$context);
-        $help = $this->colFormatter->format($scope, $this->params['height_help'], $this->getScreenWidth());
+        $help = $this->colFormatter->format($scope, $this->_options['height_help'], $this->getScreenWidth());
         $title = $this->getHelpTitle(count($context));
 
-        $this->writer->writeln($title, $this->params['style.help.title']);
-        $this->writer->writeln($help, $this->params['style.help.scope']);
+        $this->writer->writeln($title, $this->_options['style.help.title']);
+        $this->writer->writeln($help, $this->_options['style.help.scope']);
     }
 
     protected function printWelcome()
     {
         $this->writer->writeln();
-        $this->writer->writeln('Welcome to yii interactive console!', $this->params['style.welcome']);
+        $this->writer->writeln('Welcome to yii interactive console!', $this->_options['style.welcome']);
         $this->writer->writeln();
         $this->writer->writeln('docs https://github.com/LTD-Beget/yiiic');
         $this->writer->writeln();
@@ -412,28 +452,27 @@ class Yiiic extends Component
 
     protected function printPrompt()
     {
-        $this->writer->write($this->getPrompt(), $this->params['style.prompt']);
+        $this->writer->write($this->getPrompt(), $this->_options['style.prompt']);
     }
 
     protected function printBye()
     {
         $this->writer->writeln();
-        $this->writer->writeln('Bye!:)', $this->params['style.bye']);
+        $this->writer->writeln('Bye!:)', $this->_options['style.bye']);
         $this->writer->writeln();
     }
 
     protected function printNotice(string $notice)
     {
         $this->writer->writeln();
-        $this->writer->writeln($notice, $this->params['style.notice']);
+        $this->writer->writeln($notice, $this->_options['style.notice']);
         $this->writer->writeln();
     }
 
     protected function printError(string $message)
     {
         $this->writer->writeln();
-        $this->writer->write($message, $this->params['style.error']);
-        $this->writer->writeln();
+        $this->writer->writeln($message, $this->_options['style.error']);
         $this->writer->writeln();
     }
 }

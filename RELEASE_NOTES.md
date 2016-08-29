@@ -1,3 +1,11 @@
+0.5.0
+- add events
+    - beforeRunAction
+    - afterRunAction
+- configuration changes
+- hide some dependencies to init func
+    
+
 0.4.0
 - fix bugs
     - parse input

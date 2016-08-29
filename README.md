@@ -3,24 +3,25 @@
 Интерактивная `yiiic` консоль реализует умный автокомплит и контекстный воркфлоу.
 
 1. [Установка](#installation)
-2. [Интеграция в проект](#integration)
+2. [Интеграция в проект и запуск](#integration)
 3. [Умный автокомплит](#complete)
 4. [Служебные комманды](#commands)
 5. [Конфигурация](#configuration)
+6. [События](#events)
 
 ##<a name="installation">Установка</a> 
 `composer require ltd-beget/yiiic`
 
 ##<a name="integration">Интеграция в проект</a>
 
-Добавить `yiiic` компонент в конфиг консольного приложения, в `build` передается массив параметров
+Добавить `yiiic` компонент в конфиг консольного приложения
 ```php
 $application = new yii\console\Application([
     ...
     'components' => [
-	    //Для реализации чего то недефолтного пишем свой build с инжектом
-	    //своих реализаций
-        'yiiic' => LTDBeget\Yiiic\build()
+        'yiiic' => [
+			'class' => \LTDBeget\Yiiic\Yiiic::class
+		]
     ]
 ]);
 ```
@@ -32,6 +33,10 @@ class YiiicController extends \LTDBeget\Yiiic\YiiicController
 {
 
 }
+```
+Далее запуск
+```
+yii yiiic [... options]
 ```
 
 ##<a name="complete">Умный автокомплит</a>
@@ -50,24 +55,64 @@ c migrate create
 Для запуска комманды без контекста используется префикс `/`
 
 ##<a name="configuration">Конфигурация</a>
-Конфигурация в  порядке возрастания приоритета  `[default] <- [build()] <- [cli config] <- [cli option]`
+Конфигурация в  порядке возрастания приоритета:
+
 -  default - дефолтный пресет
--  build() - то что передается в билд функцию/метод
-- cli config - путь к конфигу при запуске yiiic режима (`yii yiiic --config=custom/config/path`) 
-- cli option - значение конкретного опшена, список доступных в хелпе
+-  component config 
+- cli config (путь к конфигу при запуске yiiic режима (`yii yiiic --config=custom/config/path`) )
+- cli option (значение конкретного опшена, [список доступных](#options))
 
 Дефолтный пресет
 ```php
-// config.php
 
-return [
+[
+	// внешние зависимости
+	'entities' => [
+	// $options полностью собранный массив настроек(после мержа всех источников)
+	// apiReflector должен имплементить LTDBeget\Yiiic\ApiReflectorInterface
+	   'apiReflector' => function($options) {
+	        return new ApiReflector($options['ignore']);
+	    }
+	],
+	'options' => [
+		// не выводить в хелпе
+	    'ignore' => ['yiiic', 'help'],
+	    'prompt' => 'yiiic',
+	    'show_help' => Conf::SHOW_HELP_ONCE,
+	    // если вылезет exception
+	    'show_trace' => false,
+	    'commands' => [
+	        'context' => 'c',
+	        'quit' => 'q',
+	        'help' => 'h'
+	    ],
+	    'without_context_prefix' => '/',
+	    // высота в строках хелпа, если не будет
+	    // помещаться, рассчитается так чтоб влезло
+	    'height_help' => 5,
+	    'result_border' => '=',
+	    // стили для стильных
+	    'style' => [
+	        'prompt' => [Console::FG_GREEN, Console::BOLD],
+	        'welcome' => [Console::FG_YELLOW, Console::BOLD],
+	        'bye' => [Console::FG_YELLOW, Console::BOLD],
+	        'notice' => [Console::FG_YELLOW, Console::BOLD],
+	        'help' => [
+	            'title' => [Console::FG_YELLOW, Console::UNDERLINE],
+	            'scope' => [Console::FG_YELLOW, Console::ITALIC]
+	        ],
+	        'result' => [
+	            'border' => [Console::FG_CYAN]
+	        ],
+	        'error' => [Console::FG_RED, Console::BOLD]
+	    ]
+],
     // не выводить в хелпе
     'ignore' => ['yiiic', 'help'],
     'prompt' => 'yiiic',
     'show_help' => Configuration::SHOW_HELP_*,
     // если вылезет exception
     'show_trace' => false,
-    // можно выставить свои
     'commands' => [
         'context' => 'c',
         'quit' => 'q',
@@ -96,4 +141,25 @@ return [
         ]
     ]
 ];
+```
+###<a name="options">Cli options</a>
+
+--trace - то же что options.show_trace
+
+##<a name="events">События</a>
+
+- Yiiic::EVENT_BEFORE_RUN_ACTION
+- Yiiic::EVENT_AFTER_RUN_ACTION
+
+Подписка либо через конфиг компонента, либо имплементить YiiicController::prepareYiiic()
+```php
+class YiiicController extends \LTDBeget\Yiiic\YiiicController
+{
+
+    protected function prepareYiiic(Yiiic $yiiic)
+    {
+        $yiiic->on(Yiiic::EVENT_BEFORE_RUN_ACTION, 'func');
+    }
+
+}
 ```

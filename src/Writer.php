@@ -4,7 +4,7 @@ namespace LTDBeget\Yiiic;
 
 use yii\helpers\Console;
 
-class Writer implements WriterInterface
+class Writer
 {
 
     protected $stream;

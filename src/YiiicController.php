@@ -16,30 +16,16 @@ class YiiicController extends Controller
     public $config;
 
     /**
-     * @var bool Show trace after throw exception
+     * @var bool See component config [options.show_trace]
      */
     public $trace;
 
     public function actionIndex()
     {
-        $cliParams = [];
-
-        if ($this->config) {
-
-            if (!file_exists($this->config)) {
-                throw new InvalidParamException(sprintf("Config file not found (%s)", $this->config));
-            }
-
-            $cliParams = include $this->config;
-        }
-
-        if ($this->trace != null) {
-            $cliParams['show_trace'] = (bool)$this->trace;
-        }
-
-        Configuration::setParamsFromCLI($cliParams);
-
-        (\Yii::$app->get('yiiic'))->run();
+        $this->prepareConf();
+        $yiiic = (\Yii::$app->get('yiiic'));
+        $this->prepareYiiic($yiiic);
+        $yiiic->run();
     }
 
     public function options($actionID)
@@ -48,6 +34,31 @@ class YiiicController extends Controller
             'config',
             'trace'
         ];
+    }
+
+    protected function prepareYiiic(Yiiic $yiiic)
+    {
+        //custom setting
+    }
+
+    protected function prepareConf()
+    {
+        $cliConf = [];
+
+        if ($this->config) {
+
+            if (!file_exists($this->config)) {
+                throw new InvalidParamException(sprintf("Config file not found (%s)", $this->config));
+            }
+
+            $cliConf = include $this->config;
+        }
+
+        if ($this->trace != null) {
+            $cliConf['show_trace'] = (bool)$this->trace;
+        }
+
+        Conf::setFromCLI($cliConf);
     }
 
 }
