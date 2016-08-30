@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "58dd434a5a685fe1149e527d80f40253",
-    "content-hash": "cfafce4170b26e8255c0ce1aedc95716",
+    "hash": "19f1832b4a5db277eaec9a5be8905a5f",
+    "content-hash": "e2d75f8a52740f04a3a129b5a7686e0c",
     "packages": [
         {
             "name": "bower-asset/jquery",
@@ -291,6 +291,55 @@
             "description": "Smart array access",
             "homepage": "http://github.com/Ridzhi/Smarrt",
             "time": "2016-08-08 13:57:48"
+        },
+        {
+            "name": "symfony/process",
+            "version": "v3.1.3",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/process.git",
+                "reference": "04c2dfaae4ec56a5c677b0c69fac34637d815758"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/process/zipball/04c2dfaae4ec56a5c677b0c69fac34637d815758",
+                "reference": "04c2dfaae4ec56a5c677b0c69fac34637d815758",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.5.9"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "3.1-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Symfony\\Component\\Process\\": ""
+                },
+                "exclude-from-classmap": [
+                    "/Tests/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Fabien Potencier",
+                    "email": "fabien@symfony.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Symfony Process Component",
+            "homepage": "https://symfony.com",
+            "time": "2016-07-28 11:13:48"
         },
         {
             "name": "yiisoft/yii2",

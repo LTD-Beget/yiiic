@@ -1,3 +1,6 @@
+0.6.0
+- each action run in separate process now
+
 0.5.0
 - add events
     - beforeRunAction

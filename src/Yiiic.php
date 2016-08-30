@@ -6,8 +6,9 @@ use LTDBeget\Yiiic\events\AfterRunActionEvent;
 use LTDBeget\Yiiic\events\BeforeRunActionEvent;
 use LTDBeget\Yiiic\Exceptions\InvalidEntityException;
 use Smarrt\Dot;
+use Symfony\Component\Process\Exception\ProcessFailedException;
+use Symfony\Component\Process\Process;
 use yii\base\Component;
-use yii\console\Request;
 use yii\helpers\ArrayHelper;
 use yii\helpers\Console;
 use LTDBeget\Yiiic\Exceptions\ApiReflectorNotFoundException;
@@ -204,15 +205,24 @@ class Yiiic extends Component
         $event->params = $params;
         $this->trigger(self::EVENT_BEFORE_RUN_ACTION, $event);
 
-        $this->runAction($params);
+        $exitCode = 0;
 
-        $event = new AfterRunActionEvent();
-        $event->params = $params;
-        $this->trigger(self::EVENT_AFTER_RUN_ACTION, $event);
+        try {
+            $this->runAction($params);
+        } catch (ProcessFailedException $e) {
+            $exitCode = $e->getProcess()->getExitCode();
+            $this->printError($e->getMessage());
+        } finally {
+            $event = new AfterRunActionEvent();
+            $event->params = $params;
+            $event->exitCode = $exitCode;
+            $this->trigger(self::EVENT_AFTER_RUN_ACTION, $event);
 
-        $this->writer->writeln();
-        $this->printResultBorder();
-        $this->writer->writeln();
+            $this->writer->writeln();
+            $this->printResultBorder();
+            $this->writer->writeln();
+        }
+
     }
 
     /**
@@ -220,7 +230,14 @@ class Yiiic extends Component
      */
     protected function runAction(array $params)
     {
-        \Yii::$app->handleRequest(new Request(['params' => $params]));
+        $process = new Process($this->buildCliCmd($params));
+        $process->run();
+
+        if (!$process->isSuccessful()) {
+            throw new ProcessFailedException($process);
+        }
+
+        $this->writer->writeln($process->getOutput());
     }
 
     /**
@@ -421,6 +438,25 @@ class Yiiic extends Component
 
         $this->_options = new Dot(ArrayHelper::merge($default['options'], $this->_options ?? [], $cli['options'] ?? []));
         $this->_entities = ArrayHelper::merge($default['entities'], $this->_entities ?? [], $cli['entities'] ?? []);
+    }
+
+    /**
+     * @param array $args
+     * @return string
+     *
+     * @throws \RuntimeException
+     */
+    protected function buildCliCmd(array $args) : string
+    {
+        $entryPoint = $_SERVER['argv'][0];
+
+        if (!is_executable($entryPoint)) {
+            throw new \RuntimeException(sprintf("Entry point <%s> must be executable", $entryPoint));
+        }
+
+        array_unshift($args, $_SERVER['argv'][0]);
+
+        return implode(" ", $args);
     }
 
     protected function printResultBorder()

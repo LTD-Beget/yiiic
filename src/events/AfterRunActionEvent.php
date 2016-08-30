@@ -13,4 +13,9 @@ class AfterRunActionEvent extends Event
      */
     public $params;
 
+    /**
+     * @var int
+     */
+    public $exitCode = 0;
+
 }
