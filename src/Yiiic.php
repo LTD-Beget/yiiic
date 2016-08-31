@@ -7,6 +7,7 @@ use LTDBeget\Yiiic\events\BeforeRunActionEvent;
 use LTDBeget\Yiiic\Exceptions\InvalidEntityException;
 use Smarrt\Dot;
 use Symfony\Component\Process\Exception\ProcessFailedException;
+use Symfony\Component\Process\ExecutableFinder;
 use Symfony\Component\Process\Process;
 use yii\base\Component;
 use yii\helpers\ArrayHelper;
@@ -162,7 +163,7 @@ class Yiiic extends Component
                 $this->printError($e->getTraceAsString());
             }
 
-            $this->printError(sprintf('yiiic handle input: %s', $e->getMessage()));
+            return $this->printError(sprintf('yiiic handle input: %s', $e->getMessage()));
         }
     }
 
@@ -208,9 +209,12 @@ class Yiiic extends Component
         $exitCode = 0;
 
         try {
+
             $this->runAction($params);
+
         } catch (ProcessFailedException $e) {
             $exitCode = $e->getProcess()->getExitCode();
+            $this->printError("The Symfony Process Component report: ");
             $this->printError($e->getMessage());
         } finally {
             $event = new AfterRunActionEvent();
@@ -237,7 +241,7 @@ class Yiiic extends Component
             throw new ProcessFailedException($process);
         }
 
-        $this->writer->writeln($process->getOutput());
+        $this->writer->writeln($process->getOutput(), $this->_options['style.result.content']);
     }
 
     /**
@@ -341,6 +345,7 @@ class Yiiic extends Component
     }
 
     /**
+     * @param null $input
      * @param array ...$args
      * @return array
      */
@@ -437,6 +442,11 @@ class Yiiic extends Component
         $cli = Conf::getFromCLI();
 
         $this->_options = new Dot(ArrayHelper::merge($default['options'], $this->_options ?? [], $cli['options'] ?? []));
+
+        if ($this->_options['entry_script'] === Conf::ENTRY_SCRIPT_CURRENT) {
+            $this->_options['entry_script'] = realpath($_SERVER['argv'][0]);
+        }
+
         $this->_entities = ArrayHelper::merge($default['entities'], $this->_entities ?? [], $cli['entities'] ?? []);
     }
 
@@ -448,21 +458,27 @@ class Yiiic extends Component
      */
     protected function buildCliCmd(array $args) : string
     {
-        $entryPoint = $_SERVER['argv'][0];
+        $phpbin = 'php';
+        $entryPoint = $this->_options['entry_script'];
+        array_unshift($args, $phpbin, $entryPoint);
 
-        if (!is_executable($entryPoint)) {
-            throw new \RuntimeException(sprintf("Entry point <%s> must be executable", $entryPoint));
+        $cmd = implode(" ", $args);
+
+        if (!is_executable((new ExecutableFinder())->find($phpbin))) {
+            throw new \RuntimeException(sprintf("command <%s>: %s point must be executable", $cmd, $phpbin));
         }
 
-        array_unshift($args, $_SERVER['argv'][0]);
+        if (!is_executable($entryPoint)) {
+            throw new \RuntimeException(sprintf("command <%s>: entry script <%s> must be executable", $cmd, $entryPoint));
+        }
 
-        return implode(" ", $args);
+        return $cmd;
     }
 
     protected function printResultBorder()
     {
         $length = $this->getScreenWidth();
-        $border = implode('', array_fill(0, $length - 1, $this->_options['result_border']));
+        $border = implode('', array_fill(0, $length - 1, $this->_options['style.result.separator']));
         $this->writer->writeln($border, $this->_options['style.result.border']);
     }
 
@@ -474,7 +490,7 @@ class Yiiic extends Component
         $title = $this->getHelpTitle(count($context));
 
         $this->writer->writeln($title, $this->_options['style.help.title']);
-        $this->writer->writeln($help, $this->_options['style.help.scope']);
+        $this->writer->writeln($help, $this->_options['style.help.content']);
     }
 
     protected function printWelcome()

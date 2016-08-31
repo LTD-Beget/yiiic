@@ -1,3 +1,11 @@
+0.6.1
+- fix docs
+- fix executing commands
+- add option entry_script + cli option --script
+- add option style.result.content
+- rename option style.help.scope => style.help.content
+- replace option result_border => style.result.separator
+
 0.6.0
 - each action run in separate process now
 

@@ -16,9 +16,14 @@ class YiiicController extends Controller
     public $config;
 
     /**
-     * @var bool See component config [options.show_trace]
+     * @var bool See options.show_trace
      */
     public $trace;
+
+    /**
+     * @var string See options.entry_script
+     */
+    public $script;
 
     public function actionIndex()
     {
@@ -32,7 +37,8 @@ class YiiicController extends Controller
     {
         return [
             'config',
-            'trace'
+            'trace',
+            'script'
         ];
     }
 
@@ -54,8 +60,12 @@ class YiiicController extends Controller
             $cliConf = include $this->config;
         }
 
-        if ($this->trace != null) {
-            $cliConf['show_trace'] = (bool)$this->trace;
+        if ($this->trace !== null) {
+            $cliConf['options']['show_trace'] = (bool)$this->trace;
+        }
+
+        if ($this->script !== null) {
+            $cliConf['options']['entry_script'] = $this->script;
         }
 
         Conf::setFromCLI($cliConf);

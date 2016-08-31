@@ -38,6 +38,7 @@ class YiiicController extends \LTDBeget\Yiiic\YiiicController
 ```
 yii yiiic [... options]
 ```
+>__Каждая команда выполняется в отдельном процессе__
 
 ##<a name="complete">Умный автокомплит</a>
 При работе с консолью, нажатие TAB вызывает автоподсказку возможных контроллеров/экшенов/опций.  При реализации интерфейса `ArgsCompleterInterface`  возможен комплит по аргументам. Автокомплит работает по контексту, то есть если вы ввели `migrate [press TAB]` и нажали таб, то получите список экшенов для `migrate`.
@@ -81,6 +82,8 @@ c migrate create
 	    'show_help' => Conf::SHOW_HELP_ONCE,
 	    // если вылезет exception
 	    'show_trace' => false,
+	    // путь к скрипту консольного приложения
+	    'entry_script' => Conf::ENTRY_SCRIPT_CURRENT,
 	    'commands' => [
 	        'context' => 'c',
 	        'quit' => 'q',
@@ -90,61 +93,30 @@ c migrate create
 	    // высота в строках хелпа, если не будет
 	    // помещаться, рассчитается так чтоб влезло
 	    'height_help' => 5,
-	    'result_border' => '=',
 	    // стили для стильных
 	    'style' => [
 	        'prompt' => [Console::FG_GREEN, Console::BOLD],
 	        'welcome' => [Console::FG_YELLOW, Console::BOLD],
 	        'bye' => [Console::FG_YELLOW, Console::BOLD],
 	        'notice' => [Console::FG_YELLOW, Console::BOLD],
+	        'error' => [Console::BG_RED],
 	        'help' => [
 	            'title' => [Console::FG_YELLOW, Console::UNDERLINE],
-	            'scope' => [Console::FG_YELLOW, Console::ITALIC]
+	            'content' => [Console::FG_YELLOW, Console::ITALIC]
 	        ],
 	        'result' => [
-	            'border' => [Console::FG_CYAN]
-	        ],
-	        'error' => [Console::FG_RED, Console::BOLD]
+	            'border' => [Console::FG_CYAN],
+	            'content' => [Console::FG_CYAN],
+	            'separator' => '=' 
+	        ]
 	    ]
-],
-    // не выводить в хелпе
-    'ignore' => ['yiiic', 'help'],
-    'prompt' => 'yiiic',
-    'show_help' => Configuration::SHOW_HELP_*,
-    // если вылезет exception
-    'show_trace' => false,
-    'commands' => [
-        'context' => 'c',
-        'quit' => 'q',
-        'help' => 'h'
-    ],
-    'without_context_prefix' => '/',
-    // высота в строках хелпа, если не будет
-    // помещаться, рассчитается так чтоб влезло
-    'height_help' => 5,
-    // можно выставить нескучный символ
-    // для результата выполнения экшена
-    'result_border' => '=',
-    // стили для стильных
-    'style' => [
-        'prompt' => [Console::FG_GREEN, Console::BOLD],
-        'welcome' => [Console::FG_YELLOW, Console::BOLD],
-        'bye' => [Console::FG_YELLOW, Console::BOLD],
-        'notice' => [Console::FG_YELLOW, Console::BOLD],
-        'error' => [Console::BG_RED],
-        'help' => [
-            'title' => [Console::FG_YELLOW, Console::UNDERLINE],
-            'scope' => [Console::FG_YELLOW, Console::ITALIC]
-        ],
-        'result' => [
-            'border' => [Console::FG_CYAN]
-        ]
-    ]
+	]  
 ];
 ```
 ###<a name="options">Cli options</a>
+--trace - options.show_trace
 
---trace - то же что options.show_trace
+--script - options.entry_script
 
 ##<a name="events">События</a>
 
