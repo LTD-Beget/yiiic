@@ -458,6 +458,14 @@ class Yiiic extends Component
      */
     protected function buildCliCmd(array $args) : string
     {
+        $args = array_map(function ($elem) {
+            if (($count = count(explode(' ', $elem))) > 1) {
+                $elem = '"' . $elem . '"';
+            }
+
+            return $elem;
+        }, $args);
+
         $phpbin = 'php';
         $entryPoint = $this->_options['entry_script'];
         array_unshift($args, $phpbin, $entryPoint);

@@ -1,3 +1,6 @@
+0.6.2
+- fix build cli cmd
+
 0.6.1
 - fix docs
 - fix executing commands
