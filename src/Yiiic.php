@@ -2,8 +2,8 @@
 
 namespace LTDBeget\Yiiic;
 
-use LTDBeget\Yiiic\events\AfterRunActionEvent;
-use LTDBeget\Yiiic\events\BeforeRunActionEvent;
+use LTDBeget\Yiiic\Events\AfterRunActionEvent;
+use LTDBeget\Yiiic\Events\BeforeRunActionEvent;
 use LTDBeget\Yiiic\Exceptions\InvalidEntityException;
 use Smarrt\Dot;
 use Symfony\Component\Process\Exception\ProcessFailedException;
@@ -354,7 +354,7 @@ class Yiiic extends Component
         $count = count($args);
 
         if ($count === 0) {
-            return $this->apiReflector->commands();
+            return $this->apiReflector->controllers();
         }
 
         if ($count === 1) {
@@ -365,7 +365,7 @@ class Yiiic extends Component
             return $this->apiReflector->options($args[0], $args[1]);
         }
 
-        $wantOptions = $input && strpos($input, ApiReflector::OPTION_PREFIX) === 0;
+        $wantOptions = $input && strpos($input, ApiReflectorInterface::OPTION_PREFIX) === 0;
 
         if ($wantOptions) {
             return $this->apiReflector->options($args[0], $args[1]);

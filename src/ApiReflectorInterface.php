@@ -10,7 +10,7 @@ interface ApiReflectorInterface
     /**
      * @return array
      */
-    public function commands() : array;
+    public function controllers() : array;
 
     /**
      * @param string $controllerID

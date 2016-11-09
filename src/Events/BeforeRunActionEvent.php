@@ -1,7 +1,7 @@
 <?php
 
 
-namespace LTDBeget\Yiiic\events;
+namespace LTDBeget\Yiiic\Events;
 
 
 use yii\base\Event;

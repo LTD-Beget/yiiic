@@ -40,7 +40,7 @@ class ApiReflector implements ApiReflectorInterface
     /**
      * @return array
      */
-    public function commands() : array
+    public function controllers() : array
     {
         return array_keys($this->api);
     }
