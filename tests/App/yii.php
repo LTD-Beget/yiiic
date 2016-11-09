@@ -1,10 +1,7 @@
 #!/usr/bin/env php
 <?php
 
-
-ini_set('display_errors', 1);
-ini_set('error_reporting', -1);
-
+error_reporting(-1);
 
 /**
  * Yii console bootstrap file.
@@ -16,23 +13,22 @@ ini_set('error_reporting', -1);
 
 defined('YII_DEBUG') or define('YII_DEBUG', true);
 
-$root = __DIR__ . '/..';
+$root = __DIR__ . '/../..';
 
 require $root . '/vendor/autoload.php';
 require $root . '/vendor/yiisoft/yii2/Yii.php';
 
-Yii::setAlias('LTDBeget/Yiiic', $root . '/src/');
-Yii::setAlias('LTDBeget/Dev', $root . '/dev/');
+Yii::setAlias('LTDBeget/Yiiic/Tests', $root . '/tests/');
 
 $application = new yii\console\Application([
-    'id' => 'yii-console',
-    'basePath' => __DIR__ ,
-    'controllerNamespace' => 'LTDBeget\Dev\Controllers',
-    'components' => [
-        'yiiic' => [
-            'class' => \LTDBeget\Yiiic\Yiiic::class,
-        ]
-    ]
+    'id' => 'test-app',
+    'basePath' => $root . '/tests/App',
+    'controllerNamespace' => 'LTDBeget\Yiiic\Tests\App\Controllers'
+//    'components' => [
+//        'yiiic' => [
+//            'class' => \LTDBeget\Yiiic\Yiiic::class,
+//        ]
+//    ]
 ]);
 
 $exitCode = $application->run();

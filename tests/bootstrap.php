@@ -1,10 +1,6 @@
-#!/usr/bin/env php
 <?php
 
-
-ini_set('display_errors', 1);
-ini_set('error_reporting', -1);
-
+error_reporting(-1);
 
 /**
  * Yii console bootstrap file.
@@ -26,7 +22,7 @@ Yii::setAlias('LTDBeget/Dev', $root . '/dev/');
 
 $application = new yii\console\Application([
     'id' => 'yii-console',
-    'basePath' => __DIR__ ,
+    'basePath' => $root . '/src',
     'controllerNamespace' => 'LTDBeget\Dev\Controllers',
     'components' => [
         'yiiic' => [
@@ -34,6 +30,3 @@ $application = new yii\console\Application([
         ]
     ]
 ]);
-
-$exitCode = $application->run();
-exit($exitCode);

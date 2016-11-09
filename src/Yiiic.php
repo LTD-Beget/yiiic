@@ -54,9 +54,9 @@ class Yiiic extends Component
     protected $context;
 
     /**
-     * @var InputParser
+     * @var InputResolver
      */
-    protected $inputParser;
+    protected $inputResolver;
 
     /**
      * @var ArgsCompleterInterface
@@ -79,7 +79,7 @@ class Yiiic extends Component
         $this->prepareConf();
 
         $this->context = new Context();
-        $this->inputParser = new InputParser(array_values($this->_options['commands']), $this->_options['without_context_prefix']);
+        $this->inputResolver = new InputResolver(array_values($this->_options['commands']), $this->_options['without_context_prefix']);
         $this->colFormatter = new ColFormatter();
         $this->writer = new Writer();
 
@@ -144,7 +144,7 @@ class Yiiic extends Component
     protected function handleInput(string $input)
     {
         try {
-            list($args, $command) = $this->inputParser->parse($input, $this->context->getAsArray());
+            list($args, $command) = $this->inputResolver->parse($input, $this->context->getAsArray());
 
             if ($command) {
                 return $this->handleServiceCommand($command, $args);
@@ -177,7 +177,7 @@ class Yiiic extends Component
     {
         try {
             $buffer = $this->prepareBuffer($this->getLineBuffer(), $input);
-            $args = $this->inputParser->parse($buffer, $this->context->getAsArray())[0];
+            $args = $this->inputResolver->parse($buffer, $this->context->getAsArray())[0];
 
             try {
                 $scope = $this->reflectByArgs($input, ...$args);

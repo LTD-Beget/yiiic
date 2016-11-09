@@ -1,6 +1,6 @@
 {
     "name": "ltd-beget/yiiic",
-    "description": "yii2 interactive console with smart autocomplete and context workflow",
+    "description": "yii2 interactive console with context autocomplete and workflow",
     "type": "yii2-extension",
     "license": "MIT",
     "keywords": ["yii2", "console", "interactive", "shell"],

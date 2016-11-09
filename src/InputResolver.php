@@ -5,7 +5,7 @@ namespace LTDBeget\Yiiic;
 use LTDBeget\Yiiic\Exceptions\InvalidCommandException;
 use yii\helpers\ArrayHelper;
 
-class InputParser
+class InputResolver
 {
 
     /**
@@ -19,14 +19,14 @@ class InputParser
     protected $nonContextPrefix;
 
     /**
-     * InputParser constructor.
+     * InputResolver constructor.
      * @param array $commands available service commands
-     * @param string $nonContextPrefix marker for non context interpretation
+     * @param string $withoutContextPrefix marker for non context interpretation
      */
-    public function __construct(array $commands, string $nonContextPrefix)
+    public function __construct(array $commands, string $withoutContextPrefix)
     {
         $this->commands = $commands;
-        $this->nonContextPrefix = $nonContextPrefix;
+        $this->nonContextPrefix = $withoutContextPrefix;
     }
 
     /**
