@@ -130,14 +130,6 @@ class Yiiic extends Component
         $this->printBye();
     }
 
-    protected function readInput()
-    {
-        $line = trim(readline($this->loadPrompt()));
-        readline_add_history($line);
-
-        return $line;
-    }
-
     /**
      * @param string $input
      */
@@ -269,26 +261,6 @@ class Yiiic extends Component
         return Console::getScreenSize(true)[0];
     }
 
-    protected function loadPrompt()
-    {
-        return exec(sprintf('echo "%s"', $this->getPrompt()));
-    }
-
-    /**
-     * @return string
-     */
-    protected function getPrompt() : string
-    {
-        $prompt = $this->_options['prompt'];
-        $route = $this->context->getAsString();
-
-        if ($route) {
-            $prompt .= ' ' . $this->context->getAsString();
-        }
-
-        return Console::ansiFormat($prompt . ': ', $this->_options['style.prompt']);
-    }
-
     protected function getHelpTitle(int $sizeContext)
     {
         $str = '';
@@ -306,14 +278,6 @@ class Yiiic extends Component
         }
 
         return 'Available ' . $str;
-    }
-
-    /**
-     * @uses Yiiic::onComplete()
-     */
-    protected function registerCompleteFn()
-    {
-        readline_completion_function([$this, 'onComplete']);
     }
 
     /**
@@ -372,40 +336,6 @@ class Yiiic extends Component
         }
 
         return $this->argsCompleter->getArgs($args[0], $args[1], $input, ...array_slice($args, 2));
-    }
-
-    /**
-     * @return string
-     */
-    protected function getLineBuffer() : string
-    {
-        $info = $info = readline_info();
-
-        return substr($info['line_buffer'], 0, $info['end']);
-    }
-
-    /**
-     * @param string $buffer
-     * @param string $input
-     * @return string
-     */
-    protected function prepareBuffer(string $buffer, string $input) : string
-    {
-        if (!empty($input)) {
-            return substr($buffer, 0, -(strlen($input) + 1));
-        }
-
-        return $buffer;
-    }
-
-    /**
-     * If readline_complete_function return empty, script can throw SEGFAULT
-     *
-     * @return array
-     */
-    protected function preventSegfaultValue() : array
-    {
-        return [''];
     }
 
     protected function resolvePrintHelp()
