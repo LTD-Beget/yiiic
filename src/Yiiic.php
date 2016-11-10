@@ -118,16 +118,17 @@ class Yiiic extends Component
 
     public function run()
     {
-        $this->registerCompleteFn();
-        $this->printWelcome();
-
-        do {
-            $this->resolvePrintHelp();
-            $line = $this->readInput();
-            $this->handleInput($line);
-        } while (!$this->quit);
-
-        $this->printBye();
+        Console::stdout("work\n");
+//        $this->registerCompleteFn();
+//        $this->printWelcome();
+//
+//        do {
+//            $this->resolvePrintHelp();
+//            $line = $this->readInput();
+//            $this->handleInput($line);
+//        } while (!$this->quit);
+//
+//        $this->printBye();
     }
 
     /**

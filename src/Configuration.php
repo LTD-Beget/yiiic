@@ -1,13 +1,14 @@
 <?php
 
+
 namespace LTDBeget\Yiiic;
 
+
+use Smarrt\Dot;
+use yii\helpers\ArrayHelper;
 use yii\helpers\Console;
 
-/**
- * Global dirty configuration class
- */
-class Conf
+class Configuration
 {
 
     const SHOW_HELP_ALWAYS = 'always';
@@ -15,25 +16,67 @@ class Conf
     const SHOW_HELP_ONCE = 'once';
     const ENTRY_SCRIPT_CURRENT = 'realpath($_SERVER[argv][0])';
 
-    /**
-     * @var
-     */
-    protected $params;
 
     /**
      * @var array
      */
-    protected static $cli = [];
+    protected $main;
 
-    public static function build()
+    /**
+     * @var array
+     */
+    protected $cli;
+
+    /**
+     * Configuration constructor.
+     * @param array $configuration
+     */
+    public function __construct(array $configuration)
     {
-
+        $this->main = $configuration;
     }
 
-    public static function getDefault()
+    /**
+     * @param array $cli
+     */
+    public function setCli(array $cli)
+    {
+        $this->cli = $cli;
+    }
+
+
+    /**
+     * @return Dot
+     */
+    public function build() : Dot
+    {
+        $conf = new Dot($this->merge());
+
+        if ($conf['options.entry_script'] === Conf::ENTRY_SCRIPT_CURRENT) {
+            $conf['options.entry_script'] = realpath($_SERVER['argv'][0]);
+        }
+
+        return $conf;
+    }
+
+    /**
+     * @return array
+     */
+    protected function merge() : array
+    {
+//        $r = ArrayHelper::merge($this->getDefault(), $this->main ?? [], $this->cli ?? []);
+        var_dump($this->main);
+        $r = ArrayHelper::merge($this->getDefault(), []);
+        var_dump($r);
+        die();
+
+        return $r;
+    }
+
+    protected function getDefault()
     {
         return [
-            'apiReflector' => function ($options) {
+            'reflector' => function ($options) {
                 return new ApiReflector($options['ignore']);
             },
 
@@ -68,22 +111,6 @@ class Conf
                 ]
             ],
         ];
-    }
-
-    /**
-     * @return array
-     */
-    public static function getFromCLI() : array
-    {
-        return self::$cli;
-    }
-
-    /**
-     * @param array $params
-     */
-    public static function setFromCLI(array $params)
-    {
-        self::$cli = $params;
     }
 
 }

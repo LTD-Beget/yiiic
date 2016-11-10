@@ -30,7 +30,7 @@ $application = new yii\console\Application([
     'controllerNamespace' => 'LTDBeget\Dev\Controllers',
     'components' => [
         'yiiic' => [
-            'class' => \LTDBeget\Yiiic\Yiiic::class,
+            'class' => \LTDBeget\Yiiic\Core::class
         ]
     ]
 ]);
