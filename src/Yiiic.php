@@ -476,10 +476,6 @@ class Yiiic extends Component
             throw new \RuntimeException(sprintf("command <%s>: %s point must be executable", $cmd, $phpbin));
         }
 
-        if (!is_executable($entryPoint)) {
-            throw new \RuntimeException(sprintf("command <%s>: entry script <%s> must be executable", $cmd, $entryPoint));
-        }
-
         return $cmd;
     }
 

@@ -1,3 +1,6 @@
+0.6.3
+- entry script may not be executable, so do not require this
+
 0.6.2
 - fix build cli cmd
 
