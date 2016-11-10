@@ -52,7 +52,7 @@ class Configuration
     {
         $conf = new Dot($this->merge());
 
-        if ($conf['options.entry_script'] === Conf::ENTRY_SCRIPT_CURRENT) {
+        if ($conf['options.entry_script'] === self::ENTRY_SCRIPT_CURRENT) {
             $conf['options.entry_script'] = realpath($_SERVER['argv'][0]);
         }
 
@@ -64,13 +64,7 @@ class Configuration
      */
     protected function merge() : array
     {
-//        $r = ArrayHelper::merge($this->getDefault(), $this->main ?? [], $this->cli ?? []);
-        var_dump($this->main);
-        $r = ArrayHelper::merge($this->getDefault(), []);
-        var_dump($r);
-        die();
-
-        return $r;
+        return ArrayHelper::merge($this->getDefault(), $this->main ?? [], $this->cli ?? []);
     }
 
     protected function getDefault()

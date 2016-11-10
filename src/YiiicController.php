@@ -36,6 +36,11 @@ class YiiicController extends Controller
      */
     protected $readline;
 
+    /**
+     * @var Printer
+     */
+    protected $printer;
+
 
     /**
      * @param string $id
@@ -47,31 +52,37 @@ class YiiicController extends Controller
     {
         $cli = $this->getCLIConfiguration();
 
-        $main = [
-            'reflector' => $core->getReflector(),
-            'options' => $core->getOptions()
-        ];
+        $main = [];
 
+        $reflector = $core->getReflector();
+        $options = $core->getOptions();
+
+        if ($reflector !== null) {
+            $main['reflector'] = $reflector;
+        }
+
+        if ($options !== null) {
+            $main['options'] = $options;
+        }
 
         $conf = new Configuration($main);
         $conf->setCli($cli);
         $c = $conf->build();
 
-        var_dump($c);
         $core->configure($c);
 
 //        $this->prepareYiiic($core);
 
+        $this->printer = new Printer($c['options.style']);
         $readline = new Readline($c['options.prompt'], $c['options.style.prompt']);
-        $writer = new Writer();
+        $context = new Context();
 
-        $core->on(Readline::EVENT_BEFORE_READ, function($event) use ($writer, $c) {
-            $writer->writeln();
-            $writer->writeln('Welcome to yii interactive console!', $c['options.style.welcome']);
-            $writer->writeln();
-            $writer->writeln('docs https://github.com/LTD-Beget/yiiic');
-            $writer->writeln();
-        });
+        $core->setContext($context);
+
+        $readline->on(Readline::EVENT_BEFORE_READ, [$core, 'resolveHelp']);
+
+
+
 
         $this->readline = $readline;
 
@@ -81,7 +92,9 @@ class YiiicController extends Controller
 
     public function actionIndex()
     {
+        $this->printer->printWelcome();
         $this->readline->read();
+        $this->printer->printBye();
     }
 
     public function options($actionID)

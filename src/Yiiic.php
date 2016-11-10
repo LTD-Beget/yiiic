@@ -118,16 +118,15 @@ class Yiiic extends Component
 
     public function run()
     {
-        Console::stdout("work\n");
 //        $this->registerCompleteFn();
 //        $this->printWelcome();
 //
 //        do {
-//            $this->resolvePrintHelp();
+            $this->resolvePrintHelp();
 //            $line = $this->readInput();
 //            $this->handleInput($line);
 //        } while (!$this->quit);
-//
+////
 //        $this->printBye();
     }
 
@@ -432,26 +431,26 @@ class Yiiic extends Component
         $this->writer->writeln($help, $this->_options['style.help.content']);
     }
 
-    protected function printWelcome()
-    {
-        $this->writer->writeln();
-        $this->writer->writeln('Welcome to yii interactive console!', $this->_options['style.welcome']);
-        $this->writer->writeln();
-        $this->writer->writeln('docs https://github.com/LTD-Beget/yiiic');
-        $this->writer->writeln();
-    }
-
-    protected function printPrompt()
-    {
-        $this->writer->write($this->getPrompt(), $this->_options['style.prompt']);
-    }
-
-    protected function printBye()
-    {
-        $this->writer->writeln();
-        $this->writer->writeln('Bye!:)', $this->_options['style.bye']);
-        $this->writer->writeln();
-    }
+//    protected function printWelcome()
+//    {
+//        $this->writer->writeln();
+//        $this->writer->writeln('Welcome to yii interactive console!', $this->_options['style.welcome']);
+//        $this->writer->writeln();
+//        $this->writer->writeln('docs https://github.com/LTD-Beget/yiiic');
+//        $this->writer->writeln();
+//    }
+//
+//    protected function printPrompt()
+//    {
+//        $this->writer->write($this->getPrompt(), $this->_options['style.prompt']);
+//    }
+//
+//    protected function printBye()
+//    {
+//        $this->writer->writeln();
+//        $this->writer->writeln('Bye!:)', $this->_options['style.bye']);
+//        $this->writer->writeln();
+//    }
 
     protected function printNotice(string $notice)
     {
