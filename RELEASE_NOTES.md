@@ -1,3 +1,6 @@
+0.6.5
+- fix bug in previous release (0.6.4)
+
 0.6.4
 - attach standard descriptors from parent to child process
   this allows interactive commands executions (like vim, etc.)

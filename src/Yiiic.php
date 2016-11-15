@@ -479,6 +479,7 @@ class Yiiic extends Component
         $pid = posix_getpid();
 
         $cmd = sprintf('%s %s %s %s',
+            $cmd,
             sprintf('0</proc/%s/fd/0', $pid),
             sprintf('1>/proc/%s/fd/1', $pid),
             sprintf('2>/proc/%s/fd/2', $pid)
