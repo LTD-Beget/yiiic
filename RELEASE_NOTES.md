@@ -1,3 +1,8 @@
+0.6.6
+- use bash subshell to run command in
+  allows us to use pipes and shell commands
+  not secure, but convenient
+
 0.6.5
 - fix bug in previous release (0.6.4)
 
