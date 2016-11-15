@@ -476,6 +476,14 @@ class Yiiic extends Component
             throw new \RuntimeException(sprintf("command <%s>: %s point must be executable", $cmd, $phpbin));
         }
 
+        $pid = posix_getpid();
+
+        $cmd = sprintf('%s %s %s %s',
+            sprintf('0</proc/%s/fd/0', $pid),
+            sprintf('1>/proc/%s/fd/1', $pid),
+            sprintf('2>/proc/%s/fd/2', $pid)
+        );
+
         return $cmd;
     }
 
