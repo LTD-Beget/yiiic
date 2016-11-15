@@ -1,3 +1,7 @@
+0.6.4
+- attach standard descriptors from parent to child process
+  this allows interactive commands executions (like vim, etc.)
+
 0.6.3
 - entry script may not be executable, so do not require this
 
