@@ -5,7 +5,6 @@ namespace LTDBeget\Yiiic;
 use LTDBeget\Yiiic\events\AfterRunActionEvent;
 use LTDBeget\Yiiic\events\BeforeRunActionEvent;
 use LTDBeget\Yiiic\Exceptions\InvalidEntityException;
-use Smarrt\Dot;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\ExecutableFinder;
 use Symfony\Component\Process\Process;
